@@ -1715,6 +1715,7 @@ theme.recentlyViewed = {
         document.addEventListener('cart:quantity' + this.namespace, this.quantityChanged.bind(this));
   
         this.form.on('submit' + this.namespace, this.onSubmit.bind(this));
+        this.form.addEventListener('click', this.removeItem.bind(this));
   
         if (this.noteInput) {
           this.noteInput.addEventListener('change', function() {
@@ -1767,6 +1768,31 @@ theme.recentlyViewed = {
             return false;
           }
         }
+      },
+
+      removeItem: function(evt) {
+        var removeBtn = evt.target.closest('.js-qty__remove');
+        if (!removeBtn) {
+          return;
+        }
+
+        evt.preventDefault();
+
+        var wrapper = removeBtn.closest(selectors.qtySelector);
+        if (!wrapper) {
+          return;
+        }
+
+        var input = wrapper.querySelector('.js-qty__num');
+        if (!input || !input.dataset.id) {
+          return;
+        }
+
+        input.value = 0;
+
+        document.dispatchEvent(new CustomEvent('cart:quantity' + this.namespace, {
+          detail: [input.dataset.id, 0, wrapper]
+        }));
       },
   
       /*============================================================================
