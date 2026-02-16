@@ -147,7 +147,6 @@
 
             <div data-product-blocks>
               {%- capture form_id -%}AddToCartForm-{{ section_id }}-{{ product.id }}{%- endcapture -%}
-              {%- assign first_tab_opened = false -%}
               {%- for block in blocks -%}
                 {%- case block.type -%}
                   {%- when '@app' -%}
@@ -165,6 +164,7 @@
                       {{ block.settings.page.content }}
                     {% endcapture %}
                     {% unless tab_content == blank and block.settings.title == blank %}
+<<<<<<< HEAD
                       {%- assign force_open_tab = false -%}
                       {%- if block.settings.open_by_default -%}
                         {%- assign force_open_tab = true -%}
@@ -173,19 +173,16 @@
                         {%- assign force_open_tab = true -%}
                         {%- assign first_tab_opened = true -%}
                       {%- endif -%}
+=======
+>>>>>>> parent of e7fb5bc (,)
                       <div class="product-block product-block--tab" {{ block.shopify_attributes }}>
-                        {%- render 'tab', id: tab_id, title: block.settings.title, content: tab_content, force_open: force_open_tab -%}
+                        {%- render 'tab', id: tab_id, title: block.settings.title, content: tab_content -%}
                       </div>
                     {% endunless %}
                   {%- when 'contact' -%}
                     <div class="product-block product-block--tab" {{ block.shopify_attributes }}>
                       {% assign tab_id = block.id | append: product.id %}
-                      {%- assign force_open_tab = false -%}
-                      {%- if first_tab_opened == false -%}
-                        {%- assign force_open_tab = true -%}
-                        {%- assign first_tab_opened = true -%}
-                      {%- endif -%}
-                      {%- render 'tab-contact', id: tab_id, block: block, force_open: force_open_tab -%}
+                      {%- render 'tab-contact', id: tab_id, block: block -%}
                     </div>
                   {%- when 'description' -%}
                     <div class="product-block{% if block.settings.is_tab %} product-block--tab{% endif %}" {{ block.shopify_attributes }}>
@@ -199,12 +196,7 @@
                             {{ product.description }}
                           {%- endif -%}
                         {%- endcapture -%}
-                        {%- assign force_open_tab = false -%}
-                        {%- if first_tab_opened == false -%}
-                          {%- assign force_open_tab = true -%}
-                          {%- assign first_tab_opened = true -%}
-                        {%- endif -%}
-                        {%- render 'tab', id: id, title: description_title, content: description_content, force_open: force_open_tab -%}
+                        {%- render 'tab', id: id, title: description_title, content: description_content, force_open: true -%}
                       {%- else -%}
                         {%- render 'product-description', id: id, product: product, is_tab: false -%}
                       {%- endif -%}
