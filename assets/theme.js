@@ -8402,6 +8402,10 @@ theme.recentlyViewed = {
     // Initialize quick add to cart forms on product grid items
     document.querySelectorAll('.grid-product__quick-add').forEach(function(form) {
       new theme.AjaxProduct(form);
+      // Prevent form clicks from triggering product link
+      form.addEventListener('click', function(e) {
+        e.stopPropagation();
+      });
     });
 
     document.addEventListener('ajaxProduct:added', function() {

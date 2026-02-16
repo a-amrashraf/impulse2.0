@@ -9507,9 +9507,13 @@ html[dir=rtl] .grid-product__content{
 }
 
 .grid-product__quick-add{
-  margin-top:10px;
+  position:absolute;
+  bottom:12px;
+  right:12px;
   opacity:0;
   transition:opacity 0.3s ease;
+  z-index:3;
+  margin:0;
 }
 
 .grid-product:hover .grid-product__quick-add{
