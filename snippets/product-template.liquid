@@ -166,7 +166,10 @@
                     {% endcapture %}
                     {% unless tab_content == blank and block.settings.title == blank %}
                       {%- assign force_open_tab = false -%}
-                      {%- if first_tab_opened == false -%}
+                      {%- if block.settings.open_by_default -%}
+                        {%- assign force_open_tab = true -%}
+                        {%- assign first_tab_opened = true -%}
+                      {%- elsif first_tab_opened == false -%}
                         {%- assign force_open_tab = true -%}
                         {%- assign first_tab_opened = true -%}
                       {%- endif -%}
