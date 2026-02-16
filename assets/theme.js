@@ -1560,6 +1560,29 @@ theme.recentlyViewed = {
         method: 'GET'
       }).then(response => response.json());
     },
+
+    updateCountBubble: function(count) {
+      var countEls = document.querySelectorAll('.cart-link__bubble-num');
+
+      if (countEls.length) {
+        countEls.forEach(el => {
+          el.innerText = count;
+        });
+      }
+
+      var bubbles = document.querySelectorAll('.cart-link__bubble');
+      if (bubbles.length) {
+        if (count > 0) {
+          bubbles.forEach(b => {
+            b.classList.add('cart-link__bubble--visible');
+          });
+        } else {
+          bubbles.forEach(b => {
+            b.classList.remove('cart-link__bubble--visible');
+          });
+        }
+      }
+    },
   
     getCartProductMarkup: function() {
       var url = ''.concat(theme.routes.cartPage, '?t=').concat(Date.now());
@@ -8345,6 +8368,16 @@ theme.recentlyViewed = {
     if (theme.settings.isCustomerTemplate) {
       theme.customerTemplates();
     }
+
+    document.addEventListener('ajaxProduct:added', function() {
+      theme.cart.getCart()
+        .then(function(cart) {
+          if (cart && typeof cart.item_count === 'number') {
+            theme.cart.updateCountBubble(cart.item_count);
+          }
+        })
+        .catch(function() {});
+    });
 
     document.dispatchEvent(new CustomEvent('page:loaded'));
   });
