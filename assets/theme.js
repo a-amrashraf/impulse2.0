@@ -8401,11 +8401,17 @@ theme.recentlyViewed = {
 
     // Initialize quick add to cart forms on product grid items
     document.querySelectorAll('.grid-product__quick-add').forEach(function(form) {
-      new theme.AjaxProduct(form);
-      // Prevent form clicks from triggering product link
+      new theme.AjaxProduct(form, '.grid-product__quick-add-btn');
+      // Prevent form and button clicks from triggering product link
       form.addEventListener('click', function(e) {
         e.stopPropagation();
       });
+      var btn = form.querySelector('.grid-product__quick-add-btn');
+      if (btn) {
+        btn.addEventListener('click', function(e) {
+          e.stopPropagation();
+        });
+      }
     });
 
     document.addEventListener('ajaxProduct:added', function() {
