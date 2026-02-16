@@ -164,13 +164,8 @@
                       {{ block.settings.page.content }}
                     {% endcapture %}
                     {% unless tab_content == blank and block.settings.title == blank %}
-                      {%- assign description_title = 'products.product.description' | t -%}
-                      {%- assign force_open_tab = false -%}
-                      {%- if block.settings.title != blank and block.settings.title | downcase == description_title | downcase -%}
-                        {%- assign force_open_tab = true -%}
-                      {%- endif -%}
                       <div class="product-block product-block--tab" {{ block.shopify_attributes }}>
-                        {%- render 'tab', id: tab_id, title: block.settings.title, content: tab_content, force_open: force_open_tab -%}
+                        {%- render 'tab', id: tab_id, title: block.settings.title, content: tab_content -%}
                       </div>
                     {% endunless %}
                   {%- when 'contact' -%}
