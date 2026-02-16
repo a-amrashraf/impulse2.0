@@ -87,7 +87,7 @@
           "settings": {
             "open_by_default": true,
             "title": "Description",
-            "content": "{{ product.description }}",
+            "content": "<p>{{ product.description }}</p>",
             "page": ""
           }
         },
