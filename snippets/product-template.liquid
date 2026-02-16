@@ -176,7 +176,19 @@
                   {%- when 'description' -%}
                     <div class="product-block{% if block.settings.is_tab %} product-block--tab{% endif %}" {{ block.shopify_attributes }}>
                       {%- assign id = block.id | append: product.id -%}
-                      {%- render 'product-description', id: id, product: product, is_tab: block.settings.is_tab -%}
+                      {%- if block.settings.is_tab -%}
+                        {%- assign description_title = 'products.product.description' | t -%}
+                        {%- capture description_content -%}
+                          {%- if product.empty? -%}
+                            {{ 'home_page.onboarding.product_description' | t }}
+                          {%- else -%}
+                            {{ product.description }}
+                          {%- endif -%}
+                        {%- endcapture -%}
+                        {%- render 'tab', id: id, title: description_title, content: description_content, force_open: true -%}
+                      {%- else -%}
+                        {%- render 'product-description', id: id, product: product, is_tab: false -%}
+                      {%- endif -%}
                     </div>
                   {%- when 'price' -%}
                     <div class="product-block product-block--price" {{ block.shopify_attributes }}>
