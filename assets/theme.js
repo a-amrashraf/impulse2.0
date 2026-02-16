@@ -1778,7 +1778,11 @@ theme.recentlyViewed = {
 
         evt.preventDefault();
 
-        var wrapper = removeBtn.closest(selectors.qtySelector);
+        var actions = removeBtn.closest('.cart__item-actions');
+        var wrapper = actions ? actions.querySelector(selectors.qtySelector) : null;
+        if (!wrapper) {
+          wrapper = removeBtn.closest(selectors.qtySelector);
+        }
         if (!wrapper) {
           return;
         }
@@ -1871,7 +1875,7 @@ theme.recentlyViewed = {
         var qty = evt.detail[1];
         var el = evt.detail[2];
   
-        if (!key || !qty) {
+        if (!key || qty === null || qty === undefined) {
           return;
         }
   
