@@ -8399,6 +8399,11 @@ theme.recentlyViewed = {
       theme.customerTemplates();
     }
 
+    // Initialize quick add to cart forms on product grid items
+    document.querySelectorAll('.grid-product__quick-add').forEach(function(form) {
+      new theme.AjaxProduct(form);
+    });
+
     document.addEventListener('ajaxProduct:added', function() {
       theme.cart.getCart()
         .then(function(cart) {

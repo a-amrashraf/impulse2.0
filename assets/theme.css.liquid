@@ -9506,6 +9506,59 @@ html[dir=rtl] .grid-product__content{
   white-space:nowrap;
 }
 
+.grid-product__quick-add{
+  margin-top:10px;
+  opacity:0;
+  transition:opacity 0.3s ease;
+}
+
+.grid-product:hover .grid-product__quick-add{
+  opacity:1;
+}
+
+.grid-product__quick-add-btn{
+  background-color:var(--colorBtnPrimary);
+  color:var(--colorBtnPrimaryText);
+  border:none;
+  border-radius:50%;
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:8px;
+  transition:background-color 0.3s ease, transform 0.2s ease;
+  width:36px;
+  height:36px;
+}
+
+.grid-product__quick-add-btn:hover{
+  background-color:var(--colorBtnPrimaryHover);
+  transform:scale(1.05);
+}
+
+.grid-product__quick-add-btn:active{
+  transform:scale(0.95);
+}
+
+.grid-product__quick-add-btn.btn--loading{
+  opacity:0.6;
+  pointer-events:none;
+}
+
+.grid-product__quick-add-btn .icon-cart{
+  width:18px;
+  height:18px;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:2;
+}
+
+@media only screen and (max-width:768px){
+  .grid-product__quick-add{
+    opacity:1;
+  }
+}
+
 .grid-product__tag{
   background-color:var(--colorBtnPrimary);
   color:var(--colorBtnPrimaryText);
