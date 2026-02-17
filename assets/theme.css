@@ -7957,11 +7957,11 @@ html[dir=rtl] .social-sharing__title{
   }
 
 .index-section{
-  margin:40px 0;
+  margin:0;
 }
 
 .index-section--small{
-  margin:18px 0;
+  margin:0;
 }
 
 .index-section+.index-section,.index-section+.index-section--hidden,.main-content+.index-section{
@@ -7975,15 +7975,15 @@ html[dir=rtl] .social-sharing__title{
 .section--divider{
   border-top:1px solid;
   border-top-color:var(--colorBorder);
-  padding-top:40px;
+  padding-top:0;
 }
 
 .index-section--faq{
-  margin-bottom:40px;
+  margin-bottom:0;
 }
 
 .newsletter-section{
-  padding:40px 0;
+  padding:0;
 }
 
 .newsletter-section--with-divider{
@@ -7996,7 +7996,7 @@ html[dir=rtl] .social-sharing__title{
 }
 
 .testimonials-section{
-  padding:25.5px 0;
+  padding:0;
 }
 
 .testimonials-section--with-divider{
@@ -8006,27 +8006,27 @@ html[dir=rtl] .social-sharing__title{
 
 @media only screen and (min-width:769px){
   .index-section{
-    margin:75px 0;
+    margin:0;
   }
 
   .index-section--small{
-    margin:30px 0;
+    margin:0;
   }
 
   .section--divider{
-    padding-top:75px;
+    padding-top:0;
   }
 
   .index-section--faq{
-    margin:75px 0 37.5px;
+    margin:0;
   }
 
   .newsletter-section{
-    padding:75px 0;
+    padding:0;
   }
 
   .testimonials-section{
-    padding:75px 0;
+    padding:0;
   }
 }
 
