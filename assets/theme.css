@@ -8991,8 +8991,8 @@ html[dir=rtl] .social-sharing__title{
 }
 
 .collection-grid__wrapper .grid > .grid__item {
-  padding-left: 2px;
-  padding-right: 2px;
+  padding-left: 1px;
+  padding-right: 1px;
 }
 
 @media only screen and (max-width:768px){
@@ -9331,13 +9331,13 @@ select .variant-input{
 }
 
 .grid-product{
-  margin-bottom:2px;
+  margin-bottom:1px;
 }
 
 @media only screen and (min-width:769px){
 
 .grid-product{
-    margin-bottom:4px;
+    margin-bottom:2px;
 }
   }
 
@@ -9493,7 +9493,7 @@ html[dir=rtl] .grid-product__content{
 
 .grid-product__meta{
   line-height:var(--typeBaselineHeightMinus01);
-  padding:2px 0 1px 0;
+  padding:1px 0 0 0;
   position:relative;
 }
 
@@ -9508,7 +9508,7 @@ html[dir=rtl] .grid-product__content{
 .grid-product__vendor{
   font-size:0.8em;
   letter-spacing:0.3em;
-  margin-top:2px;
+  margin-top:1px;
   opacity:0.65;
   text-transform:uppercase;
 }
@@ -9516,7 +9516,7 @@ html[dir=rtl] .grid-product__content{
 .grid-product__price{
   color:var(--colorPrice);
   font-size:calc(var(--typeBaseSize)*0.85);
-  margin-top:2px;
+  margin-top:1px;
 }
 
 .grid-product__price--original{
@@ -9676,7 +9676,7 @@ html[dir=rtl] .grid-product__content{
   display:flex;
   flex-wrap:wrap;
   line-height:1;
-  margin-top:1px;
+  margin-top:0;
 }
 
 @media only screen and (min-width:769px){
@@ -9692,7 +9692,7 @@ html[dir=rtl] .grid-product__content{
 }
 
 .grid-product__colors+.grid-product__colors{
-    margin-top:2px;
+    margin-top:1px;
   }
 
 .sales-points{
