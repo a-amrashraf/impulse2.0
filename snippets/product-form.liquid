@@ -40,11 +40,12 @@
       data-add-to-cart
       class="btn btn--full add-to-cart{% if enable_dynamic_buttons and product.selling_plan_groups == empty %} btn--secondary{% endif %}"
       {% unless current_variant.available %} disabled="disabled"{% endunless %}>
-      <svg aria-hidden="true" focusable="false" role="presentation" class="icon icon-bag-plus" viewBox="0 0 20 20" style="width: 18px; height: 18px; margin-right: 8px; vertical-align: middle; fill: currentColor; color: inherit;">
-        <path d="M5 6h10l1 11H4L5 6z" fill="currentColor" opacity="0.9"/>
-        <path d="M7 6V4a3 3 0 0 1 6 0v2" fill="none" stroke="currentColor" stroke-width="1.8"/>
-        <line x1="10" y1="9" x2="10" y2="14" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
-        <line x1="7.5" y1="11.5" x2="12.5" y2="11.5" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
+      <svg aria-hidden="true" focusable="false" role="presentation" class="icon icon-bag-plus" viewBox="0 0 24 24" style="width: 20px; height: 20px; margin-right: 8px; vertical-align: middle;">
+        <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <line x1="3" y1="6" x2="21" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M16 10a4 4 0 0 1-8 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <line x1="12" y1="12" x2="12" y2="18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+        <line x1="9" y1="15" x2="15" y2="15" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
       </svg>
       <span data-add-to-cart-text data-default-text="{{ default_text }}">
         {{ button_text }}
