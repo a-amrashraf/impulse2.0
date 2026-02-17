@@ -8961,6 +8961,47 @@ html[dir=rtl] .social-sharing__title{
     animation:grid-product__loading 1.5s ease 1.5s infinite;
   }
 
+/* Fix grid margins in collection page */
+.collection-content .page-width > .grid {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.collection-content .page-width > .grid > .grid__item {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+@media only screen and (min-width:769px){
+  .collection-content .page-width > .grid > .grid__item.medium-up--one-fifth {
+    width: 20%;
+    padding-right: 22px;
+  }
+  
+  .collection-content .page-width > .grid > .grid__item.medium-up--four-fifths {
+    width: 80%;
+    padding-left: 22px;
+  }
+}
+
+/* Fix grid inside collection-grid__wrapper */
+.collection-grid__wrapper .grid {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.collection-grid__wrapper .grid > .grid__item {
+  padding-left: 11px;
+  padding-right: 11px;
+}
+
+@media only screen and (max-width:768px){
+  .collection-grid__wrapper .grid > .grid__item {
+    padding-left: 8.5px;
+    padding-right: 8.5px;
+  }
+}
+
 .collection-sidebar{
   margin-bottom:20px;
   padding-right:10px;
