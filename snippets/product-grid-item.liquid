@@ -190,11 +190,7 @@ Arguments
             <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}">
             <input type="hidden" name="quantity" value="1">
             <button type="submit" class="grid-product__quick-add-btn" aria-label="{{ 'products.product.add_to_cart' | t }}">
-              <svg aria-hidden="true" focusable="false" role="presentation" class="icon icon-cart" viewBox="0 0 64 64">
-                <path style="stroke-miterlimit:10" d="M14 17.44h46.79l-7.94 25.61H20.96l-9.65-35.1H3"/>
-                <circle cx="27" cy="53" r="2"/>
-                <circle cx="47" cy="53" r="2"/>
-              </svg>
+              {% render 'ico-basket-add.svg' %}
             </button>
           </form>
         {%- endif -%}
