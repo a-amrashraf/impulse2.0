@@ -4487,23 +4487,6 @@ svg.icon-cart circle{
   fill:currentColor;
 }
 
-.icon-bag-plus {
-  display: inline-block;
-  vertical-align: middle;
-  color: currentColor;
-}
-
-.add-to-cart .icon-bag-plus {
-  width: 20px;
-  height: 20px;
-  margin-right: 8px;
-}
-
-.grid-product__quick-add-btn .icon-bag-plus {
-  width: 24px;
-  height: 24px;
-}
-
 .icon__fallback-text{
   clip:rect(0 0 0 0);
   border:0;
