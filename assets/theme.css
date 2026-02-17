@@ -8986,19 +8986,33 @@ html[dir=rtl] .social-sharing__title{
 
 /* Fix grid inside collection-grid__wrapper */
 .collection-grid__wrapper .grid {
-  margin-left: 0;
-  margin-right: 0;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
 }
 
 .collection-grid__wrapper .grid > .grid__item {
-  padding-left: 0;
-  padding-right: 0;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+.collection-grid__wrapper .grid-product {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
 }
 
 @media only screen and (max-width:768px){
   .collection-grid__wrapper .grid > .grid__item {
-    padding-left: 0;
-    padding-right: 0;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+  
+  .collection-grid__wrapper .grid-product {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
   }
 }
 
