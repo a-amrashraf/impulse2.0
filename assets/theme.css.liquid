@@ -9521,7 +9521,7 @@ html[dir=rtl] .grid-product__content{
 }
 
 .grid-product__quick-add-btn{
-  background-color:transparent;
+  background-color:var(--colorBtnPrimary);
   color:var(--colorBtnPrimaryText);
   border:none;
   border-radius:50%;
@@ -9536,7 +9536,7 @@ html[dir=rtl] .grid-product__content{
 }
 
 .grid-product__quick-add-btn:hover{
-  background-color:rgba(0, 0, 0, 0.1);
+  background-color:var(--colorBtnPrimaryHover);
   transform:scale(1.05);
 }
 
@@ -9549,9 +9549,9 @@ html[dir=rtl] .grid-product__content{
   pointer-events:none;
 }
 
-.grid-product__quick-add-btn svg{
-  width:20px;
-  height:20px;
+.grid-product__quick-add-btn .icon-cart{
+  width:18px;
+  height:18px;
   fill:none;
   stroke:currentColor;
   stroke-width:2;
