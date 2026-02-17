@@ -9006,6 +9006,9 @@ html[dir=rtl] .social-sharing__title{
   .collection-grid__wrapper .grid > .grid__item {
     padding-left: 0 !important;
     padding-right: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    margin-bottom: 0 !important;
   }
   
   .collection-grid__wrapper .grid-product {
@@ -9013,6 +9016,13 @@ html[dir=rtl] .social-sharing__title{
     margin-right: 0 !important;
     padding-left: 0 !important;
     padding-right: 0 !important;
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+  }
+  
+  .collection-grid__wrapper .grid-product__content {
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
   }
 }
 
