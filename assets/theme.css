@@ -2655,7 +2655,7 @@ input[type=search]::-webkit-search-cancel-button,input[type=search]::-webkit-sea
 .grid{
   list-style:none;
   margin:0;
-  margin-left:-6px;
+  margin-left:-2px;
   padding:0;
 }
 
@@ -2664,51 +2664,51 @@ input[type=search]::-webkit-search-cancel-button,input[type=search]::-webkit-sea
 @media only screen and (max-width:768px){
 
 .grid{
-    margin-left:-4px;
+    margin-left:-1px;
 }
 
 html[dir=rtl] .grid{
       margin-left:0;
-      margin-right:-4px;
+      margin-right:-1px;
 }
   }
 
 html[dir=rtl] .grid{
     margin-left:0;
-    margin-right:-6px;
+    margin-right:-2px;
 }
 
 .grid--small{
-  margin-left:-3px;
+  margin-left:-1px;
 }
 
 .grid--small .grid__item{
-    padding-left:3px;
+    padding-left:1px;
   }
 
 .grid__item{
   float:left;
   min-height:1px;
-  padding-left:6px;
+  padding-left:2px;
   width:100%;
 }
 
 @media only screen and (max-width:768px){
 
 .grid__item{
-    padding-left:4px;
+    padding-left:1px;
 }
 
 html[dir=rtl] .grid__item{
       padding-left:0;
-      padding-right:4px;
+      padding-right:1px;
 }
   }
 
 html[dir=rtl] .grid__item{
     float:right;
     padding-left:0;
-    padding-right:6px;
+    padding-right:2px;
 }
 
 .grid--no-gutters{
@@ -2720,12 +2720,12 @@ html[dir=rtl] .grid__item{
   }
 
 .grid--flush-bottom{
-  margin-bottom:-6px;
+  margin-bottom:-2px;
   overflow:auto;
 }
 
 .grid--flush-bottom>.grid__item{
-    margin-bottom:6px;
+    margin-bottom:2px;
   }
 
 .grid--center{
@@ -2767,15 +2767,15 @@ html[dir=rtl] .grid--center .grid__item{
 
 @media only screen and (max-width:768px){
   .small--grid--flush{
-    margin-left:-2px;
+    margin-left:-1px;
   }
   .page-width .small--grid--flush{
-      margin-left:-4px;
-      margin-right:-4px;
+      margin-left:-1px;
+      margin-right:-1px;
   }
 
     .small--grid--flush>.grid__item{
-      padding-left:2px;
+      padding-left:1px;
     }
 }
 
@@ -8991,14 +8991,14 @@ html[dir=rtl] .social-sharing__title{
 }
 
 .collection-grid__wrapper .grid > .grid__item {
-  padding-left: 1px;
-  padding-right: 1px;
+  padding-left: 0;
+  padding-right: 0;
 }
 
 @media only screen and (max-width:768px){
   .collection-grid__wrapper .grid > .grid__item {
-    padding-left: 1px;
-    padding-right: 1px;
+    padding-left: 0;
+    padding-right: 0;
   }
 }
 
