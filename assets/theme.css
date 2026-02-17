@@ -9345,13 +9345,13 @@ select .variant-input{
 }
 
 .grid-product{
-  margin-bottom:1px;
+  margin-bottom:0;
 }
 
 @media only screen and (min-width:769px){
 
 .grid-product{
-    margin-bottom:2px;
+    margin-bottom:0;
 }
   }
 
