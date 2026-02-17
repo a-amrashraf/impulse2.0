@@ -656,7 +656,7 @@
         "type": "checkbox",
         "id": "add_to_cart_bg_transparent",
         "label": "Transparent background",
-        "default": false
+        "default": true
       },
       {
         "type": "color",
