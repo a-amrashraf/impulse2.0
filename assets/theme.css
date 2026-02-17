@@ -9331,13 +9331,13 @@ select .variant-input{
 }
 
 .grid-product{
-  margin-bottom:8px;
+  margin-bottom:4px;
 }
 
 @media only screen and (min-width:769px){
 
 .grid-product{
-    margin-bottom:15px;
+    margin-bottom:8px;
 }
   }
 
@@ -9493,7 +9493,7 @@ html[dir=rtl] .grid-product__content{
 
 .grid-product__meta{
   line-height:var(--typeBaselineHeightMinus01);
-  padding:10px 0 6px 0;
+  padding:6px 0 4px 0;
   position:relative;
 }
 
