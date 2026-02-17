@@ -9493,7 +9493,7 @@ html[dir=rtl] .grid-product__content{
 
 .grid-product__meta{
   line-height:var(--typeBaselineHeightMinus01);
-  padding:6px 0 4px 0;
+  padding:2px 0 1px 0;
   position:relative;
 }
 
@@ -9508,7 +9508,7 @@ html[dir=rtl] .grid-product__content{
 .grid-product__vendor{
   font-size:0.8em;
   letter-spacing:0.3em;
-  margin-top:5px;
+  margin-top:2px;
   opacity:0.65;
   text-transform:uppercase;
 }
@@ -9516,7 +9516,7 @@ html[dir=rtl] .grid-product__content{
 .grid-product__price{
   color:var(--colorPrice);
   font-size:calc(var(--typeBaseSize)*0.85);
-  margin-top:5px;
+  margin-top:2px;
 }
 
 .grid-product__price--original{
@@ -9675,14 +9675,14 @@ html[dir=rtl] .grid-product__content{
 .grid-product__colors{
   display:flex;
   flex-wrap:wrap;
-  line-height:15px;
-  margin-top:3px;
+  line-height:1;
+  margin-top:2px;
 }
 
 @media only screen and (min-width:769px){
 
 .grid-product__colors{
-    line-height:19px;
+    line-height:1;
 }
   }
 
@@ -9692,7 +9692,7 @@ html[dir=rtl] .grid-product__content{
 }
 
 .grid-product__colors+.grid-product__colors{
-    margin-top:4px;
+    margin-top:2px;
   }
 
 .sales-points{
