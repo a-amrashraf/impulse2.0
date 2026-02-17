@@ -8991,14 +8991,14 @@ html[dir=rtl] .social-sharing__title{
 }
 
 .collection-grid__wrapper .grid > .grid__item {
-  padding-left: 4px;
-  padding-right: 4px;
+  padding-left: 2px;
+  padding-right: 2px;
 }
 
 @media only screen and (max-width:768px){
   .collection-grid__wrapper .grid > .grid__item {
-    padding-left: 2px;
-    padding-right: 2px;
+    padding-left: 1px;
+    padding-right: 1px;
   }
 }
 
@@ -9331,13 +9331,13 @@ select .variant-input{
 }
 
 .grid-product{
-  margin-bottom:4px;
+  margin-bottom:2px;
 }
 
 @media only screen and (min-width:769px){
 
 .grid-product{
-    margin-bottom:8px;
+    margin-bottom:4px;
 }
   }
 
@@ -9676,7 +9676,7 @@ html[dir=rtl] .grid-product__content{
   display:flex;
   flex-wrap:wrap;
   line-height:1;
-  margin-top:2px;
+  margin-top:1px;
 }
 
 @media only screen and (min-width:769px){
