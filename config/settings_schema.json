@@ -660,6 +660,35 @@
             "label": "t:settings_schema.product_tiles.settings.swatch_style.options.square.label"
           }
         ]
+      },
+      {
+        "type": "header",
+        "content": "Add to Cart Icon"
+      },
+      {
+        "type": "image_picker",
+        "id": "add_to_cart_icon",
+        "label": "Custom add to cart icon",
+        "info": "Upload a custom icon for the add to cart button. Leave empty to use default cart icon."
+      },
+      {
+        "type": "color",
+        "id": "add_to_cart_icon_color",
+        "label": "Icon color",
+        "default": "#ffffff"
+      },
+      {
+        "type": "checkbox",
+        "id": "add_to_cart_bg_transparent",
+        "label": "Transparent background",
+        "default": false
+      },
+      {
+        "type": "color",
+        "id": "add_to_cart_bg_color",
+        "label": "Background color",
+        "default": "#1c1d1d",
+        "info": "Only applies when transparent background is disabled"
       }
     ]
   },

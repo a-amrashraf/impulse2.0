@@ -9521,8 +9521,12 @@ html[dir=rtl] .grid-product__content{
 }
 
 .grid-product__quick-add-btn{
-  background-color:var(--colorBtnPrimary);
-  color:var(--colorBtnPrimaryText);
+  {% if settings.add_to_cart_bg_transparent %}
+  background-color: transparent;
+  {% else %}
+  background-color: {{ settings.add_to_cart_bg_color | default: '#1c1d1d' }};
+  {% endif %}
+  color: {{ settings.add_to_cart_icon_color | default: '#ffffff' }};
   border:none;
   border-radius:50%;
   cursor:pointer;
@@ -9536,7 +9540,11 @@ html[dir=rtl] .grid-product__content{
 }
 
 .grid-product__quick-add-btn:hover{
-  background-color:var(--colorBtnPrimaryHover);
+  {% if settings.add_to_cart_bg_transparent %}
+  background-color: rgba(0, 0, 0, 0.1);
+  {% else %}
+  background-color: {{ settings.add_to_cart_bg_color | default: '#1c1d1d' | color_darken: 10 }};
+  {% endif %}
   transform:scale(1.05);
 }
 
@@ -9556,6 +9564,19 @@ html[dir=rtl] .grid-product__content{
   stroke:currentColor;
   stroke-width:2;
 }
+
+.grid-product__quick-add-btn .icon-cart-custom{
+  width:20px;
+  height:20px;
+  object-fit:contain;
+  filter: brightness(0) saturate(100%) invert(1);
+}
+
+{% if settings.add_to_cart_icon_color != blank %}
+.grid-product__quick-add-btn .icon-cart-custom{
+  filter: none;
+}
+{% endif %}
 
 @media only screen and (max-width:768px){
   .grid-product__quick-add{
