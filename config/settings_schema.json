@@ -638,31 +638,6 @@
       },
       {
         "type": "header",
-        "content": "t:settings_schema.product_tiles.settings.header_color_swatches"
-      },
-      {
-        "type": "checkbox",
-        "id": "enable_swatches",
-        "label": "t:settings_schema.product_tiles.settings.enable_swatches.label"
-      },
-      {
-        "type": "select",
-        "id": "swatch_style",
-        "label": "t:settings_schema.product_tiles.settings.swatch_style.label",
-        "default": "round",
-        "options": [
-          {
-            "value": "round",
-            "label": "t:settings_schema.product_tiles.settings.swatch_style.options.round.label"
-          },
-          {
-            "value": "square",
-            "label": "t:settings_schema.product_tiles.settings.swatch_style.options.square.label"
-          }
-        ]
-      },
-      {
-        "type": "header",
         "content": "Add to Cart Icon"
       },
       {
@@ -689,6 +664,31 @@
         "label": "Background color",
         "default": "#1c1d1d",
         "info": "Only applies when transparent background is disabled"
+      },
+      {
+        "type": "header",
+        "content": "t:settings_schema.product_tiles.settings.header_color_swatches"
+      },
+      {
+        "type": "checkbox",
+        "id": "enable_swatches",
+        "label": "t:settings_schema.product_tiles.settings.enable_swatches.label"
+      },
+      {
+        "type": "select",
+        "id": "swatch_style",
+        "label": "t:settings_schema.product_tiles.settings.swatch_style.label",
+        "default": "round",
+        "options": [
+          {
+            "value": "round",
+            "label": "t:settings_schema.product_tiles.settings.swatch_style.options.round.label"
+          },
+          {
+            "value": "square",
+            "label": "t:settings_schema.product_tiles.settings.swatch_style.options.square.label"
+          }
+        ]
       }
     ]
   },
