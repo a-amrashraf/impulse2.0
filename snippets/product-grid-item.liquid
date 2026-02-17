@@ -193,11 +193,11 @@ Arguments
               {%- if settings.add_to_cart_icon != blank -%}
                 <img src="{{ settings.add_to_cart_icon | img_url: '40x40' }}" alt="Add to cart" class="icon icon-cart-custom" loading="lazy">
               {%- else -%}
-                <svg aria-hidden="true" focusable="false" role="presentation" class="icon icon-bag-plus" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M5 6h10l1 11H4L5 6z"/>
-                  <path d="M7 6V4a3 3 0 0 1 6 0v2"/>
-                  <line x1="10" y1="9" x2="10" y2="14"/>
-                  <line x1="7.5" y1="11.5" x2="12.5" y2="11.5"/>
+                <svg aria-hidden="true" focusable="false" role="presentation" class="icon icon-bag-plus" viewBox="0 0 20 20" style="fill: currentColor; color: inherit;">
+                  <path d="M5 6h10l1 11H4L5 6z" fill="currentColor" opacity="0.9"/>
+                  <path d="M7 6V4a3 3 0 0 1 6 0v2" fill="none" stroke="currentColor" stroke-width="1.8"/>
+                  <line x1="10" y1="9" x2="10" y2="14" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
+                  <line x1="7.5" y1="11.5" x2="12.5" y2="11.5" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/>
                 </svg>
               {%- endif -%}
             </button>
