@@ -8975,12 +8975,12 @@ html[dir=rtl] .social-sharing__title{
 @media only screen and (min-width:769px){
   .collection-content .page-width > .grid > .grid__item.medium-up--one-fifth {
     width: 20%;
-    padding-right: 22px;
+    padding-right: 16px;
   }
   
   .collection-content .page-width > .grid > .grid__item.medium-up--four-fifths {
     width: 80%;
-    padding-left: 22px;
+    padding-left: 16px;
   }
 }
 
@@ -8991,14 +8991,14 @@ html[dir=rtl] .social-sharing__title{
 }
 
 .collection-grid__wrapper .grid > .grid__item {
-  padding-left: 11px;
-  padding-right: 11px;
+  padding-left: 8px;
+  padding-right: 8px;
 }
 
 @media only screen and (max-width:768px){
   .collection-grid__wrapper .grid > .grid__item {
-    padding-left: 8.5px;
-    padding-right: 8.5px;
+    padding-left: 4px;
+    padding-right: 4px;
   }
 }
 
