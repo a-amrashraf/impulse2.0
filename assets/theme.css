@@ -4488,22 +4488,22 @@ svg.icon-cart circle{
 }
 
 svg.icon-bag-plus circle,svg.icon-bag-plus ellipse,svg.icon-bag-plus g,svg.icon-bag-plus line,svg.icon-bag-plus path,svg.icon-bag-plus polygon,svg.icon-bag-plus polyline,svg.icon-bag-plus rect{
-  fill:none;
-  stroke-width:2;
-  stroke:currentColor;
-  stroke-linecap:round;
-  stroke-linejoin:round;
+  fill:inherit;
+  stroke:inherit;
 }
 
 .add-to-cart .icon-bag-plus{
   width:20px;
   height:20px;
   margin-right:8px;
+  display:inline-block;
+  vertical-align:middle;
 }
 
 .grid-product__quick-add-btn .icon-bag-plus{
   width:24px;
   height:24px;
+  display:inline-block;
 }
 
 .icon__fallback-text{
