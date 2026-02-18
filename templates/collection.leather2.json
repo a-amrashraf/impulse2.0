@@ -183,9 +183,9 @@
         "product_grid"
       ],
       "custom_css": [
-        ".grid-product__image-mask {margin-bottom: 1px !important;}",
-        " /* Remove bottom padding under product card */.grid-product__content,.grid-product__meta {padding-bottom: 1px !important; margin-bottom: 1px !important;}",
-        " /* Optional: remove extra space from the whole card */.grid-product {margin-bottom: 1px !important;}"
+        ".grid-product__image-mask {margin-bottom: 4px !important;}",
+        " /* Remove bottom padding under product card */.grid-product__content,.grid-product__meta {padding-bottom: 4px !important; margin-bottom: 4px !important;}",
+        " /* Optional: remove extra space from the whole card */.grid-product {margin-bottom: 4px !important;}"
       ],
       "settings": {
         "enable_sidebar": false,
