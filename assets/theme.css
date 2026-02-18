@@ -4868,7 +4868,7 @@ svg.icon-bag-plus circle,svg.icon-bag-plus ellipse,svg.icon-bag-plus g,svg.icon-
 }
 
 .image-wrap .animate-me,.image-wrap svg{
-    opacity:0;
+    opacity:1;
   }
 
 .no-js .image-wrap .animate-me,.no-js .image-wrap svg{
@@ -4876,119 +4876,119 @@ svg.icon-bag-plus circle,svg.icon-bag-plus ellipse,svg.icon-bag-plus g,svg.icon-
   }
 
 .aos-animate .image-wrap .animate-me,.aos-animate .image-wrap svg{
-    animation:fade-in 1s cubic-bezier(0.26, 0.54, 0.32, 1) 0s forwards;
+    animation:none;
   }
 
 .aos-animate[data-aos=row-of-3]:nth-child(3n+2) .image-wrap img{
-    animation-delay:150ms;
+    animation-delay:0ms;
 }
 
 .aos-animate[data-aos=row-of-3]:nth-child(3n+3) .image-wrap img{
-    animation-delay:300ms;
+    animation-delay:0ms;
 }
 
 .aos-animate[data-aos=row-of-4]:nth-child(4n+2) .image-wrap img{
-    animation-delay:120ms;
+    animation-delay:0ms;
 }
 
 .aos-animate[data-aos=row-of-4]:nth-child(4n+3) .image-wrap img{
-    animation-delay:240ms;
+    animation-delay:0ms;
 }
 
 .aos-animate[data-aos=row-of-4]:nth-child(4n+4) .image-wrap img{
-    animation-delay:360ms;
+    animation-delay:0ms;
 }
 
 .aos-animate[data-aos=row-of-5]:nth-child(5n+2) .image-wrap img{
-    animation-delay:75ms;
+    animation-delay:0ms;
 }
 
 .aos-animate[data-aos=row-of-5]:nth-child(5n+3) .image-wrap img{
-    animation-delay:150ms;
+    animation-delay:0ms;
 }
 
 .aos-animate[data-aos=row-of-5]:nth-child(5n+4) .image-wrap img{
-    animation-delay:225ms;
+    animation-delay:0ms;
 }
 
 .aos-animate[data-aos=row-of-5]:nth-child(5n+5) .image-wrap img{
-    animation-delay:300ms;
+    animation-delay:0ms;
 }
 
 .aos-animate[data-aos=row-of-6]:nth-child(6n+2) .image-wrap img{
-    animation-delay:50ms;
+    animation-delay:0ms;
 }
 
 .aos-animate[data-aos=row-of-6]:nth-child(6n+3) .image-wrap img{
-    animation-delay:100ms;
+    animation-delay:0ms;
 }
 
 .aos-animate[data-aos=row-of-6]:nth-child(6n+4) .image-wrap img{
-    animation-delay:150ms;
+    animation-delay:0ms;
 }
 
 .aos-animate[data-aos=row-of-6]:nth-child(6n+5) .image-wrap img{
-    animation-delay:200ms;
+    animation-delay:0ms;
 }
 
 .aos-animate[data-aos=row-of-6]:nth-child(6n+6) .image-wrap img{
-    animation-delay:250ms;
+    animation-delay:0ms;
 }
 
 .aos-animate[data-aos=row-of-3]:nth-child(3n+2) .collection-image{
-    animation-delay:150ms;
+    animation-delay:0ms;
 }
 
 .aos-animate[data-aos=row-of-3]:nth-child(3n+3) .collection-image{
-    animation-delay:300ms;
+    animation-delay:0ms;
 }
 
 .aos-animate[data-aos=row-of-4]:nth-child(4n+2) .collection-image{
-    animation-delay:120ms;
+    animation-delay:0ms;
 }
 
 .aos-animate[data-aos=row-of-4]:nth-child(4n+3) .collection-image{
-    animation-delay:240ms;
+    animation-delay:0ms;
 }
 
 .aos-animate[data-aos=row-of-4]:nth-child(4n+4) .collection-image{
-    animation-delay:360ms;
+    animation-delay:0ms;
 }
 
 .aos-animate[data-aos=row-of-5]:nth-child(5n+2) .collection-image{
-    animation-delay:75ms;
+    animation-delay:0ms;
 }
 
 .aos-animate[data-aos=row-of-5]:nth-child(5n+3) .collection-image{
-    animation-delay:150ms;
+    animation-delay:0ms;
 }
 
 .aos-animate[data-aos=row-of-5]:nth-child(5n+4) .collection-image{
-    animation-delay:225ms;
+    animation-delay:0ms;
 }
 
 .aos-animate[data-aos=row-of-5]:nth-child(5n+5) .collection-image{
-    animation-delay:300ms;
+    animation-delay:0ms;
 }
 
 .aos-animate[data-aos=row-of-6]:nth-child(6n+2) .collection-image{
-    animation-delay:50ms;
+    animation-delay:0ms;
 }
 
 .aos-animate[data-aos=row-of-6]:nth-child(6n+3) .collection-image{
-    animation-delay:100ms;
+    animation-delay:0ms;
 }
 
 .aos-animate[data-aos=row-of-6]:nth-child(6n+4) .collection-image{
-    animation-delay:150ms;
+    animation-delay:0ms;
 }
 
 .aos-animate[data-aos=row-of-6]:nth-child(6n+5) .collection-image{
-    animation-delay:200ms;
+    animation-delay:0ms;
 }
 
 .aos-animate[data-aos=row-of-6]:nth-child(6n+6) .collection-image{
-    animation-delay:250ms;
+    animation-delay:0ms;
 }
 
 .loading:after,.loading:before,.unload:after,.unload:before{
