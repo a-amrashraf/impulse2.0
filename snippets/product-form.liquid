@@ -18,6 +18,27 @@
     {%- render 'gift-card-recipient-form', product: product, form: form, section: section -%}
   {%- endif -%}
 
+  {%- if settings.enable_special_package -%}
+    {%- comment -%} Special Package Option {%- endcomment -%}
+    {%- assign package_price_cents = settings.special_package_price | default: 500 | times: 1 -%}
+    {%- assign package_price_display = package_price_cents | money -%}
+    
+    <div class="product-form__item product-form__item--special-package" style="margin-bottom: 20px;">
+      <label class="product-form__special-package-label" style="display: flex; align-items: center; cursor: pointer; font-size: 16px;">
+        <input 
+          type="checkbox" 
+          name="properties[{{ settings.special_package_cart_label | default: 'Special Package' }}]" 
+          value="Yes" 
+          id="special-package-checkbox"
+          style="margin-right: 10px; width: 18px; height: 18px; cursor: pointer;">
+        <span>{{ settings.special_package_label | default: 'Add Special Package' }} (+{{ package_price_display }})</span>
+      </label>
+      {%- if settings.special_package_description != blank -%}
+        <p style="margin: 8px 0 0 28px; font-size: 14px; color: #777;">{{ settings.special_package_description }}</p>
+      {%- endif -%}
+    </div>
+  {%- endif -%}
+
   {%- if enable_dynamic_buttons -%}
     <div class="payment-buttons">
   {%- endif -%}
