@@ -1057,5 +1057,45 @@
         "label": "t:settings_schema.extras.settings.disable_animations.label"
       }
     ]
+  },
+  {
+    "name": "Special Package",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Special Package Settings"
+      },
+      {
+        "type": "checkbox",
+        "id": "enable_special_package",
+        "label": "Enable special package option",
+        "default": true
+      },
+      {
+        "type": "text",
+        "id": "special_package_label",
+        "label": "Package label",
+        "default": "Add Special Package"
+      },
+      {
+        "type": "text",
+        "id": "special_package_price",
+        "label": "Package price (in cents, e.g., 500 for $5.00)",
+        "default": "500",
+        "info": "Enter the price in cents (e.g., 500 = $5.00, 1000 = $10.00)"
+      },
+      {
+        "type": "textarea",
+        "id": "special_package_description",
+        "label": "Package description",
+        "default": "Premium gift wrapping with personalized note card"
+      },
+      {
+        "type": "text",
+        "id": "special_package_cart_label",
+        "label": "Cart display label",
+        "default": "Special Package"
+      }
+    ]
   }
 ]
