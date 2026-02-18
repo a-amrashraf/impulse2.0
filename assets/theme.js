@@ -1848,11 +1848,6 @@ theme.recentlyViewed = {
         if (Shopify && Shopify.StorefrontExpressButtons) {
           Shopify.StorefrontExpressButtons.initialize();
         }
-        
-        // Re-initialize special package checkboxes after cart rebuild
-        if (typeof theme.initSpecialPackageCheckboxes === 'function') {
-          setTimeout(theme.initSpecialPackageCheckboxes, 50);
-        }
       },
   
       updateCartDiscounts: function(markup) {
@@ -8427,91 +8422,6 @@ theme.recentlyViewed = {
           }
         })
         .catch(function() {});
-    });
-
-    // Handle special package checkbox changes in cart
-    theme.initSpecialPackageCheckboxes = function() {
-      document.querySelectorAll('.cart-special-package-checkbox').forEach(function(checkbox) {
-        // Remove existing event listeners by cloning
-        var newCheckbox = checkbox.cloneNode(true);
-        checkbox.parentNode.replaceChild(newCheckbox, checkbox);
-        
-        newCheckbox.addEventListener('change', function() {
-          var cartKey = this.dataset.cartKey;
-          var propertyName = this.dataset.propertyName;
-          var isChecked = this.checked;
-          
-          // Disable checkbox during update
-          this.disabled = true;
-          
-          // Get current cart to find the item
-          fetch('/cart.js', {
-            credentials: 'same-origin',
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-Requested-With': 'XMLHttpRequest'
-            }
-          })
-          .then(function(response) { return response.json(); })
-          .then(function(cart) {
-            // Find the item in the cart
-            var item = cart.items.find(function(i) { return i.key === cartKey; });
-            if (!item) {
-              console.error('Item not found in cart');
-              newCheckbox.disabled = false;
-              return;
-            }
-            
-            // Build new properties object
-            var newProperties = {};
-            if (item.properties) {
-              for (var key in item.properties) {
-                if (key !== propertyName && key.charAt(0) !== '_') {
-                  newProperties[key] = item.properties[key];
-                }
-              }
-            }
-            
-            // Add special package property if checked
-            if (isChecked) {
-              newProperties[propertyName] = 'Yes';
-            }
-            
-            // Update the cart item
-            return fetch('/cart/change.js?t=' + Date.now(), {
-              method: 'POST',
-              body: JSON.stringify({
-                id: cartKey,
-                properties: newProperties
-              }),
-              credentials: 'same-origin',
-              headers: {
-                'Content-Type': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
-                'Accept': 'application/json'
-              }
-            });
-          })
-          .then(function(response) { return response.json(); })
-          .then(function(updatedCart) {
-            // Reload the page to refresh cart display
-            window.location.reload();
-          })
-          .catch(function(error) {
-            console.error('Error updating cart:', error);
-            newCheckbox.disabled = false;
-          });
-        });
-      });
-    };
-    
-    // Initialize on page load
-    theme.initSpecialPackageCheckboxes();
-    
-    // Re-initialize after cart updates
-    document.addEventListener('cart:updated', function() {
-      setTimeout(theme.initSpecialPackageCheckboxes, 100);
     });
 
     document.dispatchEvent(new CustomEvent('page:loaded'));

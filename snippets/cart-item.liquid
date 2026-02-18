@@ -31,47 +31,21 @@
         </div>
       {%- endif -%}
       {%- assign property_size = product.properties | size -%}
-      {%- assign has_special_package = false -%}
-      {%- assign special_package_label = settings.special_package_cart_label | default: 'Special Package' -%}
-      
       {% if property_size > 0 %}
         {% for p in product.properties %}
           {%- assign first_character_in_key = p.first | truncate: 1, '' -%}
-          {% if p.first == special_package_label and p.last == 'Yes' %}
-            {%- assign has_special_package = true -%}
-          {% endif %}
           {% unless p.last == blank or first_character_in_key == '_' %}
-            {% unless p.first == special_package_label %}
-              <div class="cart__item--properties">
-                <span>{{ p.first }}:</span>
-                {% if p.last contains '/uploads/' %}
-                  <a href="{{ p.last }}">{{ p.last | split: '/' | last }}</a>
-                {% else %}
-                  {{ p.last }}
-                {% endif %}
-              </div>
-            {% endunless %}
+            <div class="cart__item--properties">
+              <span>{{ p.first }}:</span>
+              {% if p.last contains '/uploads/' %}
+                <a href="{{ p.last }}">{{ p.last | split: '/' | last }}</a>
+              {% else %}
+                {{ p.last }}
+              {% endif %}
+            </div>
           {% endunless %}
         {% endfor %}
       {% endif %}
-
-      {%- if settings.enable_special_package -%}
-        {%- assign package_price_cents = settings.special_package_price | default: 500 | times: 1 -%}
-        {%- assign package_price_display = package_price_cents | money -%}
-        
-        <div class="cart__item--special-package-toggle" style="margin-top: 12px;">
-          <label class="cart__special-package-label" style="display: flex; align-items: center; cursor: pointer; font-size: 14px;">
-            <input 
-              type="checkbox" 
-              class="cart-special-package-checkbox"
-              data-cart-key="{{ product.key }}"
-              data-property-name="{{ special_package_label }}"
-              {% if has_special_package %}checked{% endif %}
-              style="margin-right: 8px; width: 16px; height: 16px; cursor: pointer;">
-            <span>{{ settings.special_package_label | default: 'Add Special Package' }} (+{{ package_price_display }})</span>
-          </label>
-        </div>
-      {%- endif -%}
 
     </div>
     <div class="cart__item-sub">
