@@ -4868,7 +4868,7 @@ svg.icon-bag-plus circle,svg.icon-bag-plus ellipse,svg.icon-bag-plus g,svg.icon-
 }
 
 .image-wrap .animate-me,.image-wrap svg{
-    opacity:1;
+    opacity:0;
   }
 
 .no-js .image-wrap .animate-me,.no-js .image-wrap svg{
@@ -4876,7 +4876,7 @@ svg.icon-bag-plus circle,svg.icon-bag-plus ellipse,svg.icon-bag-plus g,svg.icon-
   }
 
 .aos-animate .image-wrap .animate-me,.aos-animate .image-wrap svg{
-    animation:none;
+    animation:fade-in 1s cubic-bezier(0.26, 0.54, 0.32, 1) 0s forwards;
   }
 
 .aos-animate[data-aos=row-of-3]:nth-child(3n+2) .image-wrap img{
