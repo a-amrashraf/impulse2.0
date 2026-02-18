@@ -8756,13 +8756,13 @@ html[dir=rtl] .social-sharing__title{
   }
 
 .collection-content{
-  padding-top:22.5px;
+  padding-top:15px;
 }
 
 @media only screen and (min-width:769px){
 
 .collection-content{
-    padding-top:45px;
+    padding-top:25px;
 }
   }
 
