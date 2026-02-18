@@ -1832,7 +1832,7 @@ img{
 }
 
 .image-element{
-  opacity:0;
+  opacity:1;
 }
 
 .image-element[loading=eager]{
@@ -1852,7 +1852,7 @@ img{
 }
 
 .aos-animate[data-aos=image-fade-in] .image-element{
-    animation:fade-in 0.5s cubic-bezier(0.29, 0.65, 0.58, 1) forwards;
+    animation:none;
 }
 
 .aos-animate[data-aos=image-fade-in] .image-element.loader-logo__img{
