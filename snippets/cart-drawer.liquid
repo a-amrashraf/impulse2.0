@@ -21,6 +21,9 @@
             <div class="appear-animation appear-delay-3">
               <label for="CartNoteDrawer">{{ 'cart.general.note' | t }}</label>
               <textarea name="note" class="input-full cart-notes" id="CartNoteDrawer">{{ cart.note }}</textarea>
+              {% if settings.cart_notes_hint_text != blank %}
+                <small class="cart-notes__hint">{{ settings.cart_notes_hint_text }}</small>
+              {% endif %}
             </div>
           {% endif %}
         </div>
