@@ -878,6 +878,12 @@
         "label": "t:settings_schema.cart.settings.cart_notes_enable.label"
       },
       {
+        "type": "text",
+        "id": "cart_notes_hint_text",
+        "label": "t:settings_schema.cart.settings.cart_notes_hint_text.label",
+        "info": "t:settings_schema.cart.settings.cart_notes_hint_text.info"
+      },
+      {
         "type": "checkbox",
         "id": "cart_terms_conditions_enable",
         "label": "t:settings_schema.cart.settings.cart_terms_conditions_enable.label"

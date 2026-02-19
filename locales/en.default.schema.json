@@ -3515,6 +3515,10 @@
         "cart_notes_enable": {
           "label": "Enable order notes"
         },
+        "cart_notes_hint_text": {
+          "label": "Order notes hint text",
+          "info": "This text will appear below the order notes field to guide customers"
+        },
         "cart_terms_conditions_enable": {
           "label": "Enable terms and conditions checkbox"
         },
