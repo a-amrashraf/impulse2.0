@@ -237,8 +237,54 @@ theme.recentlyViewed = {
     lockMobileScrolling: function(namespace, element) {
       var el = element ? element : document.documentElement;
       document.documentElement.classList.add('lock-scroll');
-      el.on('touchmove' + namespace, function() {
+      
+      // Prevent touchmove on the background content
+      el.on('touchmove' + namespace, function(evt) {
+        // Allow scrolling only within drawer scrollable areas
+        var target = evt.target;
+        var drawerScrollable = target.closest('.drawer__scrollable');
+        
+        if (!drawerScrollable) {
+          evt.preventDefault();
+          return false;
+        }
+        
+        // Check if the scrollable area can actually scroll
+        var hasVerticalScroll = drawerScrollable.scrollHeight > drawerScrollable.clientHeight;
+        
+        if (!hasVerticalScroll) {
+          evt.preventDefault();
+          return false;
+        }
+        
+        // Allow scrolling within the drawer but prevent overscroll
+        var scrollTop = drawerScrollable.scrollTop;
+        var scrollHeight = drawerScrollable.scrollHeight;
+        var clientHeight = drawerScrollable.clientHeight;
+        var delta = evt.touches[0].clientY - (evt.touches[0].startY || evt.touches[0].clientY);
+        
+        // Prevent scrolling beyond boundaries
+        if ((scrollTop <= 0 && delta > 0) || (scrollTop + clientHeight >= scrollHeight && delta < 0)) {
+          evt.preventDefault();
+          return false;
+        }
+        
+        // Store the starting position for next event
+        if (!evt.touches[0].startY) {
+          evt.touches[0].startY = evt.touches[0].clientY;
+        }
+        
         return true;
+      });
+      
+      // Store initial touch position
+      el.on('touchstart' + namespace, function(evt) {
+        var target = evt.target;
+        var drawerScrollable = target.closest('.drawer__scrollable');
+        
+        if (drawerScrollable && evt.touches[0]) {
+          evt.touches[0].startY = evt.touches[0].clientY;
+        }
       });
     },
   
@@ -246,6 +292,7 @@ theme.recentlyViewed = {
       document.documentElement.classList.remove('lock-scroll');
       var el = element ? element : document.documentElement;
       el.off('touchmove' + namespace);
+      el.off('touchstart' + namespace);
     }
   };
   

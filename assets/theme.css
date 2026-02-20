@@ -4519,6 +4519,17 @@ svg.icon-bag-plus circle,svg.icon-bag-plus ellipse,svg.icon-bag-plus g,svg.icon-
 
 .js-drawer-open{
   overflow:hidden;
+  position:fixed;
+  width:100%;
+  height:100%;
+}
+
+@media only screen and (min-width:769px){
+  .js-drawer-open{
+    position:static;
+    width:auto;
+    height:auto;
+  }
 }
 
 .drawer{
@@ -4534,6 +4545,8 @@ svg.icon-bag-plus circle,svg.icon-bag-plus ellipse,svg.icon-bag-plus g,svg.icon-
   top:0;
   transition:transform 0.25s cubic-bezier(0.165, 0.84, 0.44, 1);
   z-index:30;
+  overscroll-behavior:contain;
+  touch-action:pan-y;
 }
 
 @media screen and (max-height:400px){
@@ -4708,6 +4721,9 @@ svg.icon-bag-plus circle,svg.icon-bag-plus ellipse,svg.icon-bag-plus g,svg.icon-
 .drawer__scrollable{
   -webkit-overflow-scrolling:touch;
   overflow:hidden;
+  overscroll-behavior:contain;
+  -ms-scroll-chaining:none;
+  position:relative;
   overflow-y:auto;
   padding-top:var(--drawer-gutter);
 }
