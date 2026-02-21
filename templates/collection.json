@@ -97,7 +97,7 @@
       ],
       "custom_css": [
         ".product__price--compare {color: black;}",
-        ".collection-filter .btn,.collection-filter select {font-size: 11px; height: 28px; font-family: 'Poppins', sans-serif; padding: 2px 16px 8px 16px; line-height: 1; text-align: center;}",
+        ".collection-filter .btn,.collection-filter select {font-size: 11px !important; height: 28px; font-family: 'Poppins', sans-serif; padding: 2px 16px 8px 16px; line-height: 1; text-align: center;}",
         ".collection-content {padding-top: 1px;}",
         ".grid-product__image-mask {margin-bottom: 4px !important;}",
         " /* Remove bottom padding under product card */.grid-product__content,.grid-product__meta {padding-bottom: 4px !important; margin-bottom: 4px !important;}",

@@ -8841,7 +8841,7 @@ html[dir=rtl] .social-sharing__title{
   }
 
 .collection-filter .btn,.collection-filter select{
-    font-size:11px;
+    font-size:11px !important;
     height:28px;
     font-family:'Poppins', sans-serif;
     line-height:1;
@@ -8859,6 +8859,11 @@ html[dir=rtl] .social-sharing__title{
     -webkit-appearance:none;
     -moz-appearance:none;
     appearance:none;
+    background-image:var(--urlIcoSelect);
+    background-position:right 10px center;
+    background-repeat:no-repeat;
+    background-size:10px;
+    cursor:pointer;
   }
 
 .collection-filter .btn{
@@ -8873,15 +8878,16 @@ html[dir=rtl] .social-sharing__title{
 
 .collection-filter .btn{
       text-align:center;
-      width:auto;
+      width:100%;
       padding:2px 10px 8px 10px;
-      font-size:10px;
+      font-size:10px !important;
   }
 
 .collection-filter select{
       padding:2px 10px 8px 10px;
-      font-size:10px;
+      font-size:10px !important;
       text-align:center;
+      width:100%;
   }
     }
 
