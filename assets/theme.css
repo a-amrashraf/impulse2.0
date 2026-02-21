@@ -8772,13 +8772,19 @@ html[dir=rtl] .social-sharing__title{
   }
 
 .collection-content{
-  padding-top:22.5px;
+  padding-top:10px;
+}
+
+@media only screen and (max-width:768px){
+  .collection-content{
+    padding-top:20px;
+  }
 }
 
 @media only screen and (min-width:769px){
 
 .collection-content{
-    padding-top:45px;
+    padding-top:20px;
 }
   }
 
@@ -8814,6 +8820,10 @@ html[dir=rtl] .social-sharing__title{
 .collection-filter select{
     display:block;
     width:100%;
+    border:1px solid;
+    border-color:var(--colorBorder);
+    padding:6px 12px;
+    border-radius:0;
   }
 
 .collection-filter .btn{
@@ -8840,7 +8850,7 @@ html[dir=rtl] .social-sharing__title{
 
 .collection-filter__item{
   flex:1 1 auto;
-  margin-bottom:15px;
+  margin-bottom:8px;
 }
 
 .collection-filter .btn:not(.btn--tertiary-active),.collection-filter__sort-container{
