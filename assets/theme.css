@@ -8822,14 +8822,18 @@ html[dir=rtl] .social-sharing__title{
     width:100%;
     border:1px solid;
     border-color:var(--colorBorder);
-    padding:6px 12px;
+    padding:4px 16px 8px 16px;
     border-radius:0;
+    background:var(--colorBody);
+    -webkit-appearance:none;
+    -moz-appearance:none;
+    appearance:none;
   }
 
 .collection-filter .btn{
     border:1px solid;
     border-color:var(--colorBorder);
-    padding:6px 16px;
+    padding:4px 16px 8px 16px;
   }
 
 @media only screen and (max-width:768px){
