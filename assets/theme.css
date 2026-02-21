@@ -8836,6 +8836,7 @@ html[dir=rtl] .social-sharing__title{
     border-color:var(--colorBorder);
     padding:2px 16px 8px 16px;
     text-align:center;
+    width:100%;
   }
 
 @media only screen and (max-width:768px){
@@ -8872,8 +8873,8 @@ html[dir=rtl] .social-sharing__title{
 }
 
 .collection-filter__item--drawer{
-  flex:0 0 auto;
-  max-width:160px;
+  flex:0 0 160px;
+  width:160px;
 }
 
 .collection-filter__item--count{
@@ -8882,8 +8883,8 @@ html[dir=rtl] .social-sharing__title{
 }
 
 .collection-filter__item--sort{
-  flex:0 0 auto;
-  max-width:160px;
+  flex:0 0 160px;
+  width:160px;
 }
 
 @media only screen and (max-width:768px){
@@ -8893,13 +8894,13 @@ html[dir=rtl] .social-sharing__title{
   }
 
   .collection-filter__item--drawer{
-    flex:0 0 auto;
-    max-width:140px;
+    flex:0 0 140px;
+    width:140px;
   }
 
   .collection-filter__item--sort{
-    flex:0 0 auto;
-    max-width:140px;
+    flex:0 0 140px;
+    width:140px;
   }
 }
 
