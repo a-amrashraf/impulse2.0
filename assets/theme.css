@@ -8842,6 +8842,13 @@ html[dir=rtl] .social-sharing__title{
 .collection-filter .btn{
       text-align:left;
       width:100%;
+      padding:2px 12px 8px 12px;
+      font-size:11px;
+  }
+
+.collection-filter select{
+      padding:2px 12px 8px 12px;
+      font-size:11px;
   }
     }
 
@@ -8881,6 +8888,10 @@ html[dir=rtl] .social-sharing__title{
   .collection-filter__item--count{
     flex:1 1 100%;
     order:3;
+  }
+
+  .collection-filter__item--sort{
+    max-width:160px;
   }
 }
 
