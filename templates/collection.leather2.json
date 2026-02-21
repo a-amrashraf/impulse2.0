@@ -95,9 +95,9 @@
         "collection_BMdhYE"
       ],
       "custom_css": [
-        ".collection-item {flex: 0 0 40%; scroll-snap-align: start; text-align: center;}",
-        ".collection-slider {display: flex; overflow-x: auto; scroll-snap-type: x mandatory;}",
-        ".collection-title {position: relative; overflow: hidden;}"
+        ".collection-item {flex: 0 0 40%; scroll-snap-align: start; text-align: center; }",
+        ".collection-slider {display: flex; overflow-x: auto; scroll-snap-type: x mandatory; margin-bottom: 0px }",
+        ".collection-title {position: relative; overflow: hidden; }"
       ],
       "name": "Collection Slider",
       "settings": {
