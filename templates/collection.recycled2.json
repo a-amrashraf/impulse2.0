@@ -157,7 +157,7 @@
       ],
       "custom_css": [
         ".grid-product__image-mask {margin-bottom: 4px !important;}",
-        " /* Remove bottom padding under product card */.grid-product__content,.grid-product__meta {padding-bottom: 4px !important; margin-bottom: 4px !important;}",
+        " /* Remove bottom padding under product card */.grid-product__content,.grid-product__meta {padding-bottom: 4px !important; margin-bottom: 4px !important; padding-top: 0px}",
         " /* Optional: remove extra space from the whole card */.grid-product {margin-bottom: 4px !important;}"
       ],
       "settings": {
