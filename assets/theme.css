@@ -8786,6 +8786,7 @@ html[dir=rtl] .social-sharing__title{
   align-items:center;
   display:flex;
   justify-content:flex-end;
+  gap:12px;
 }
 
 @media only screen and (max-width:768px){
@@ -8804,8 +8805,8 @@ html[dir=rtl] .social-sharing__title{
   }
 
 .collection-filter .btn,.collection-filter select{
-    font-size:14px;
-    height:36px;
+    font-size:13px;
+    height:32px;
     font-family:'Poppins', sans-serif;
   }
 
@@ -8817,7 +8818,7 @@ html[dir=rtl] .social-sharing__title{
 .collection-filter .btn{
     border:1px solid;
     border-color:var(--colorBorder);
-    padding:2px 14px;
+    padding:2px 12px;
   }
 
 @media only screen and (max-width:768px){
@@ -8844,16 +8845,18 @@ html[dir=rtl] .social-sharing__title{
 }
 
 .collection-filter__item--drawer{
-  flex:0 1 48%;
+  flex:0 0 auto;
+  max-width:180px;
 }
 
 .collection-filter__item--count{
-  flex:1 1 170%;
+  flex:1 1 auto;
   text-align:center;
 }
 
 .collection-filter__item--sort{
-  flex:0 1 48%;
+  flex:0 0 auto;
+  max-width:200px;
 }
 
 @media only screen and (max-width:768px){
