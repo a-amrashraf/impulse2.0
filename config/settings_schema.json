@@ -892,6 +892,29 @@
         "type": "url",
         "id": "cart_terms_conditions_page",
         "label": "t:settings_schema.cart.settings.cart_terms_conditions_page.label"
+      },
+      {
+        "type": "header",
+        "content": "Gift Wrapping"
+      },
+      {
+        "type": "checkbox",
+        "id": "cart_gift_wrap_enable",
+        "label": "Enable gift wrapping option",
+        "default": true
+      },
+      {
+        "type": "text",
+        "id": "cart_gift_wrap_price",
+        "label": "Gift wrap price (in cents)",
+        "default": "500",
+        "info": "Enter the price in cents. For example, 500 = $5.00"
+      },
+      {
+        "type": "text",
+        "id": "cart_gift_wrap_label",
+        "label": "Gift wrap label",
+        "default": "Add gift wrapping"
       }
     ]
   },

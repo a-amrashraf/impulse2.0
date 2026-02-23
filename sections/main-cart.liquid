@@ -51,6 +51,18 @@
             <div data-subtotal>{{ cart.total_price | money }}</div>
           </div>
 
+          {% if settings.cart_gift_wrap_enable %}
+            <div class="cart__item-sub cart__item-row" id="gift-wrap-total-container" style="display: none;">
+              <div>{{ settings.cart_gift_wrap_label | default: "Gift Wrapping" }}</div>
+              <div id="gift-wrap-total">$0.00</div>
+            </div>
+
+            <div class="cart__item-sub cart__item-row" id="cart-total-with-giftwrap" style="display: none;">
+              <div><strong>{{ 'cart.general.total' | t | default: "Total" }}</strong></div>
+              <div id="cart-final-total"><strong>{{ cart.total_price | money }}</strong></div>
+            </div>
+          {% endif %}
+
           {% if settings.cart_terms_conditions_enable %}
             <div class="cart__item-row cart__terms">
               <input type="checkbox" id="CartTerms" class="cart__terms-checkbox">

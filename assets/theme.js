@@ -1645,7 +1645,7 @@ theme.recentlyViewed = {
     },
   
     changeItem: function(key, qty) {
-  
+
       return this._updateCart({
         url: ''.concat(theme.routes.cartChange, '?t=').concat(Date.now()),
         data: JSON.stringify({
@@ -1654,7 +1654,19 @@ theme.recentlyViewed = {
         })
       })
     },
-  
+
+    updateLineItemProperty: function(key, propertyName, propertyValue) {
+      return this._updateCart({
+        url: ''.concat(theme.routes.cartChange, '?t=').concat(Date.now()),
+        data: JSON.stringify({
+          id: key,
+          properties: {
+            [propertyName]: propertyValue
+          }
+        })
+      })
+    },
+
     _updateCart: function(params) {
       return fetch(params.url, {
         method: 'POST',
@@ -1771,21 +1783,18 @@ theme.recentlyViewed = {
           });
         }
   
+        // Gift wrap checkbox functionality
+        this.initGiftWrapCheckboxes();
+
         // Dev-friendly way to build the cart
         document.addEventListener('cart:build', function() {
           this.buildCart();
         }.bind(this));
       },
-  
+
       reInit: function() {
         this.initQtySelectors();
-      },
-  
-      onSubmit: function(evt) {
-        this.submitBtn.classList.add(classes.btnLoading);
-  
-        /*
-          Checks for drawer or cart open class on body element
+        this.initGiftWrapCheckboxes();
           and then stops the form from being submitted. We are also
           checking against a custom property, this.cartItemsUpdated = false.
   
@@ -1890,11 +1899,9 @@ theme.recentlyViewed = {
   
         this.reInit();
   
-        if (window.AOS) { AOS.refreshHard() }
-  
-        if (Shopify && Shopify.StorefrontExpressButtons) {
-          Shopify.StorefrontExpressButtons.initialize();
-        }
+        // Calculate and display gift wrap total
+        this.updateGiftWrapTotal();
+
       },
   
       updateCartDiscounts: function(markup) {
@@ -1916,7 +1923,79 @@ theme.recentlyViewed = {
           });
         });
       },
-  
+
+      /*============================================================================
+        Gift wrap handling
+      ==============================================================================*/
+      initGiftWrapCheckboxes: function() {
+        var checkboxes = this.form.querySelectorAll('.gift-wrap-checkbox');
+        checkboxes.forEach(checkbox => {
+          checkbox.addEventListener('change', this.handleGiftWrapChange.bind(this));
+        });
+      },
+
+      handleGiftWrapChange: function(evt) {
+        var checkbox = evt.target;
+        var lineItemKey = checkbox.dataset.key;
+        var isChecked = checkbox.checked;
+        
+        // Disable checkbox during update
+        checkbox.disabled = true;
+        
+        // Update cart with gift wrap property
+        theme.cart.updateLineItemProperty(lineItemKey, '_gift_wrap', isChecked ? 'Yes' : '')
+          .then(() => {
+            this.buildCart();
+          })
+          .catch((error) => {
+            console.error('Error updating gift wrap:', error);
+            checkbox.checked = !isChecked; // Revert checkbox state
+            checkbox.disabled = false;
+          });
+      },
+
+      updateGiftWrapTotal: function() {
+        var checkboxes = this.form.querySelectorAll('.gift-wrap-checkbox:checked');
+        var giftWrapCount = checkboxes.length;
+        
+        if (giftWrapCount === 0) {
+          // Hide gift wrap rows if no items are wrapped
+          var giftWrapContainer = document.getElementById('gift-wrap-total-container');
+          var totalContainer = document.getElementById('cart-total-with-giftwrap');
+          if (giftWrapContainer) giftWrapContainer.style.display = 'none';
+          if (totalContainer) totalContainer.style.display = 'none';
+          return;
+        }
+        
+        // Get gift wrap price from first checkbox
+        var giftWrapPrice = checkboxes[0] ? parseInt(checkboxes[0].dataset.price) : 0;
+        var giftWrapTotal = giftWrapPrice * giftWrapCount;
+        
+        // Get current subtotal
+        var subtotalElement = this.subtotal;
+        var subtotalText = subtotalElement.textContent.replace(/[^0-9.]/g, '');
+        var subtotal = parseFloat(subtotalText) * 100; // Convert to cents
+        
+        // Calculate total with gift wrap
+        var finalTotal = subtotal + giftWrapTotal;
+        
+        // Update display
+        var giftWrapContainer = document.getElementById('gift-wrap-total-container');
+        var giftWrapTotalElement = document.getElementById('gift-wrap-total');
+        var totalContainer = document.getElementById('cart-total-with-giftwrap');
+        var finalTotalElement = document.getElementById('cart-final-total');
+        
+        if (giftWrapContainer && giftWrapTotalElement) {
+          giftWrapContainer.style.display = '';
+          giftWrapTotalElement.innerHTML = theme.Currency.formatMoney(giftWrapTotal, theme.settings.moneyFormat);
+        }
+        
+        if (totalContainer && finalTotalElement) {
+          totalContainer.style.display = '';
+          finalTotalElement.innerHTML = '<strong>' + theme.Currency.formatMoney(finalTotal, theme.settings.moneyFormat) + '</strong>';
+        }
+      },
+
       quantityChanged: function(evt) {
         var key = evt.detail[0];
         var qty = evt.detail[1];
