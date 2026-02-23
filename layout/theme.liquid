@@ -263,6 +263,9 @@ document.addEventListener("DOMContentLoaded", function () {
           this.variantId = await this.getWrappingVariantId();
           console.log('✅ Wrapping variant ID cached:', this.variantId);
         }
+
+        // Ensure wrapping accordion toggle works after dynamic cart re-renders
+        this.attachCollapsibleListeners();
         
         // Attach listeners to all checkboxes
         this.attachCheckboxListeners();
@@ -279,6 +282,30 @@ document.addEventListener("DOMContentLoaded", function () {
         console.error('❌ Gift wrapping init failed:', error);
         this.isUpdating = false;
       }
+    }
+
+    attachCollapsibleListeners() {
+      const headers = document.querySelectorAll('[data-wrapping-container] [data-wrapping-toggle]');
+
+      headers.forEach(header => {
+        if (header.dataset.toggleBound === 'true') {
+          return;
+        }
+
+        header.dataset.toggleBound = 'true';
+
+        header.addEventListener('click', () => {
+          const container = header.closest('[data-wrapping-container]');
+          if (!container) return;
+
+          const itemsContainer = container.querySelector('.wrapping-items-container');
+          const toggleBtn = header.querySelector('.wrapping-toggle-btn');
+          if (!itemsContainer || !toggleBtn) return;
+
+          itemsContainer.classList.toggle('collapsed');
+          toggleBtn.classList.toggle('collapsed');
+        });
+      });
     }
     
     /**

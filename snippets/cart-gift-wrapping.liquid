@@ -177,35 +177,4 @@
     </div>
   </div>
   
-  <script>
-    // Gift wrapping collapsible toggle (delegated so it survives AJAX DOM replacement)
-    if (!window.__giftWrappingToggleBound) {
-      document.addEventListener('click', function(event) {
-        const header = event.target.closest('[data-wrapping-toggle]');
-        if (!header) return;
-
-        const container = header.closest('[data-wrapping-container]');
-        if (!container) return;
-
-        const itemsContainer = container.querySelector('.wrapping-items-container');
-        const toggleBtn = header.querySelector('.wrapping-toggle-btn');
-        if (!itemsContainer || !toggleBtn) return;
-
-        itemsContainer.classList.toggle('collapsed');
-        toggleBtn.classList.toggle('collapsed');
-
-        const containerId = container.id;
-        if (containerId) {
-          const isCollapsed = itemsContainer.classList.contains('collapsed');
-          try {
-            localStorage.setItem(`wrapping_collapsed_${containerId}`, isCollapsed);
-          } catch (e) {
-            console.warn('Could not save wrapping state:', e);
-          }
-        }
-      });
-
-      window.__giftWrappingToggleBound = true;
-    }
-  </script>
 {% endif %}
