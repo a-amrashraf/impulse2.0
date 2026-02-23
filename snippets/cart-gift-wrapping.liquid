@@ -90,6 +90,14 @@
       }
     </style>
 
+    <style>
+      {# Hide wrapping product checkbox if it somehow appears #}
+      .wrapping-item[data-wrapping-item*="special-wrapping"],
+      .wrapping-item[data-wrapping-item*="special wrapping"] {
+        display: none !important;
+      }
+    </style>
+    
     <div class="wrapping-header">🎁 {{ settings.cart_wrapping_text | default: 'Add special gift wrapping' }}</div>
     
     {% if wrappable_items.size > 0 %}

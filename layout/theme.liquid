@@ -310,42 +310,71 @@ document.addEventListener("DOMContentLoaded", function () {
      * Attach change listeners to all checkboxes
      */
     attachCheckboxListeners() {
-      // Get all checkboxes and filter out any wrapping product ones
-      let checkboxes = Array.from(document.querySelectorAll('.wrapping-checkbox[data-item-key]'));
+      console.log('🔍 attachCheckboxListeners called - scanning DOM...');
       
-      // Safety: filter out wrapping product checkboxes by checking multiple properties
-      checkboxes = checkboxes.filter(cb => {
+      // Get ALL checkboxes first
+      const allCheckboxesRaw = document.querySelectorAll('.wrapping-checkbox[data-item-key]');
+      console.log('📦 Total checkboxes found in DOM:', allCheckboxesRaw.length);
+      
+      // Log each checkbox for debugging
+      allCheckboxesRaw.forEach((cb, idx) => {
         const parent = cb.closest('.wrapping-item');
-        if (!parent) return true;
-        
-        // Get item key and extract variant ID
         const itemKey = cb.dataset.itemKey;
-        const variantId = itemKey.split(':')[0];
-        
-        // Check the data attribute
-        const wrappingItemKey = parent.dataset.wrappingItem;
-        
-        // Check the product title text
-        const titleEl = parent.querySelector('.wrapping-item-title');
-        const titleText = (titleEl?.textContent || '').toLowerCase();
-        
-        // Multiple ways to detect wrapping product - very aggressive filtering
-        const isWrappingProduct = 
-          wrappingItemKey?.includes('special-wrapping') ||
-          wrappingItemKey?.includes('special wrapping') ||
-          variantId === this.variantId.toString() || // Filter by wrapping variant ID
-          titleText.includes('special wrapping') || 
-          titleText.includes('special wrap') ||
-          titleText.includes('gift wrap');
-        
-        if (isWrappingProduct) {
-          console.log('⚠️  Filtering out wrapping product:', variantId, '(wrapping variant:', this.variantId, ')');
-          return false;
-        }
-        return true;
+        const titleEl = parent?.querySelector('.wrapping-item-title');
+        const titleText = titleEl?.textContent?.trim() || 'Unknown';
+        console.log(`  [${idx}] Title: "${titleText}", Key: ${itemKey}`);
       });
       
-      console.log('📦 Found', checkboxes.length, 'wrapping checkboxes (after filtering)');
+      // IMPORTANT: First pass - remove any wrapping product checkboxes from DOM entirely
+      const wrappingItemsToRemove = [];
+      allCheckboxesRaw.forEach(cb => {
+        const parent = cb.closest('.wrapping-item');
+        if (!parent) return;
+        
+        const itemKey = cb.dataset.itemKey;
+        const wrappingItemKey = parent.dataset.wrappingItem;
+        const titleEl = parent.querySelector('.wrapping-item-title');
+        const titleText = (titleEl?.textContent || '').toLowerCase().trim();
+        
+        // Extract variant ID for comparison
+        const variantId = itemKey.split(':')[0];
+        
+        // VERY aggressive detection - check EVERYTHING
+        const isWrappingProduct = 
+          // Check handle in data attribute
+          wrappingItemKey?.includes('special-wrapping') ||
+          wrappingItemKey?.includes('special wrapping') ||
+          // Check product title text
+          titleText === 'special wrapping' ||
+          titleText === 'gift wrapping' ||
+          titleText === 'special wrap' ||
+          titleText.includes('special wrapping') || 
+          titleText.includes('special wrap') ||
+          titleText.includes('gift wrap') ||
+          // Variant ID comparison (if this.variantId is set)
+          (this.variantId && variantId === this.variantId.toString());
+        
+        if (isWrappingProduct) {
+          console.log('🗑️  DETECTED WRAPPING PRODUCT - Removing from DOM:', titleText, '(Key:', itemKey, ', Variant:', variantId, ', This Variant ID:', this.variantId, ')');
+          wrappingItemsToRemove.push(parent);
+        }
+      });
+      
+      // Remove detected wrapping products
+      wrappingItemsToRemove.forEach(item => {
+        item.remove();
+      });
+      
+      console.log('🗑️  Removed', wrappingItemsToRemove.length, 'wrapping product item(s) from DOM');
+      
+      // Now get only the legitimate product checkboxes
+      let checkboxes = Array.from(document.querySelectorAll('.wrapping-checkbox[data-item-key]'));
+      console.log('✅ Final legitimate checkboxes to listen to:', checkboxes.length);
+      checkboxes.forEach((cb, idx) => {
+        const parent = cb.closest('.wrapping-item');
+        const titleEl = parent?.querySelector('.wrapping-item-title');
+        console.log(`  [${idx}] ${titleEl?.textContent?.trim()}`);
+      });
       
       checkboxes.forEach(checkbox => {
         // Clone to remove old listeners
@@ -487,6 +516,13 @@ document.addEventListener("DOMContentLoaded", function () {
         }, 0);
         
         console.log('📊 Total items to wrap:', totalToWrap);
+        console.log('📊 Checked boxes count:', checkedBoxes.length);
+        
+        // CRITICAL: If no checkboxes are checked, we must remove wrapping
+        if (totalToWrap === 0) {
+          console.log('⚠️  No items selected for wrapping - will remove wrapping product');
+        }
+        
         await this.syncWrappingToCart(totalToWrap);
       } finally {
         clearTimeout(timeout);
@@ -502,15 +538,21 @@ document.addEventListener("DOMContentLoaded", function () {
         console.log('📤 Syncing wrapping to cart. Quantity:', quantity);
         
         // Get current cart
-        const cartResponse = await fetch('/cart.js');
+        const cartResponse = await fetch('/cart.js?t=' + Date.now()); // Cache bust
         const cart = await cartResponse.json();
         console.log('🛒 Current cart items:', cart.items.length);
+        cart.items.forEach((item, idx) => {
+          console.log(`  [${idx}] ${item.product_handle} (qty: ${item.quantity}, variant: ${item.variant_id})`);
+        });
         
         // Find wrapping item in cart
         const wrappingItem = cart.items.find(item => 
           item.product_handle === this.wrappingHandle
         );
-        console.log('🎁 Wrapping item in cart:', wrappingItem ? 'Yes' : 'No');
+        console.log('🎁 Wrapping item in cart:', wrappingItem ? 'YES' : 'NO');
+        if (wrappingItem) {
+          console.log('   Key:', wrappingItem.key, 'Qty:', wrappingItem.quantity);
+        }
         
         // Get wrapped product names
         const wrappedProductNames = this.getWrappedProductNames();
@@ -541,8 +583,24 @@ document.addEventListener("DOMContentLoaded", function () {
         } else {
           // Remove wrapping if it's in cart
           if (wrappingItem) {
-            console.log('➖ Removing wrapping product');
-            await this.updateCartItem(wrappingItem.key, 0);
+            console.log('➖ REMOVING wrapping product. Key:', wrappingItem.key);
+            const removeResult = await this.updateCartItem(wrappingItem.key, 0);
+            console.log('✅ Remove request completed. Result:', removeResult);
+            
+            // Clear localStorage since we're removing all wrapping
+            try {
+              localStorage.removeItem('gift_wrapping_variant_ids');
+              console.log('🗑️  Cleared gift wrapping variant IDs from storage');
+            } catch (e) {
+              console.warn('⚠️  Could not clear localStorage:', e.message);
+            }
+            
+            // Wait a moment and verify removal
+            await new Promise(resolve => setTimeout(resolve, 300));
+            const verifyResponse = await fetch('/cart.js?t=' + Date.now());
+            const verifyCart = await verifyResponse.json();
+            const stillThere = verifyCart.items.some(item => item.product_handle === this.wrappingHandle);
+            console.log('✔️  Verification - Wrapping still in cart?', stillThere ? 'YES (ERROR!)' : 'NO (good!)');
           } else {
             console.log('ℹ️  No wrapping to remove');
           }
@@ -647,7 +705,14 @@ document.addEventListener("DOMContentLoaded", function () {
         });
         
         const result = await response.json();
-        console.log('✅ Cart item updated successfully');
+        
+        // Log the result
+        if (quantity === 0) {
+          console.log('✅ Wrapping product removed successfully');
+        } else {
+          console.log('✅ Cart item updated successfully');
+        }
+        
         return result;
       } catch (error) {
         console.error('❌ Error updating cart item:', error);
