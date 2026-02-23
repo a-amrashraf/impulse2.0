@@ -178,62 +178,34 @@
   </div>
   
   <script>
-    // Gift wrapping collapsible toggle
-    document.addEventListener('DOMContentLoaded', function() {
-      const wrappingHeaders = document.querySelectorAll('[data-wrapping-toggle]');
-      
-      wrappingHeaders.forEach(header => {
-        header.addEventListener('click', function() {
-          const container = this.closest('[data-wrapping-container]');
-          if (!container) return;
-          
-          const itemsContainer = container.querySelector('.wrapping-items-container');
-          const toggleBtn = this.querySelector('.wrapping-toggle-btn');
-          
-          if (!itemsContainer || !toggleBtn) return;
-          
-          // Toggle collapsed class
-          itemsContainer.classList.toggle('collapsed');
-          toggleBtn.classList.toggle('collapsed');
-          
-          // Save state to localStorage
-          const containerId = container.id;
-          if (containerId) {
-            const isCollapsed = itemsContainer.classList.contains('collapsed');
-            try {
-              localStorage.setItem(`wrapping_collapsed_${containerId}`, isCollapsed);
-            } catch (e) {
-              console.warn('Could not save wrapping state:', e);
-            }
-          }
-        });
-        
-        // Restore saved state on page load
+    // Gift wrapping collapsible toggle (delegated so it survives AJAX DOM replacement)
+    if (!window.__giftWrappingToggleBound) {
+      document.addEventListener('click', function(event) {
+        const header = event.target.closest('[data-wrapping-toggle]');
+        if (!header) return;
+
         const container = header.closest('[data-wrapping-container]');
+        if (!container) return;
+
         const itemsContainer = container.querySelector('.wrapping-items-container');
         const toggleBtn = header.querySelector('.wrapping-toggle-btn');
-        
-        if (container && itemsContainer) {
-          const containerId = container.id;
-          if (containerId) {
-            try {
-              const saved = localStorage.getItem(`wrapping_collapsed_${containerId}`);
-              // If no saved state, default to collapsed (true)
-              // Otherwise use the saved state
-              const isCollapsed = saved === null ? true : saved === 'true';
-              if (isCollapsed) {
-                itemsContainer.classList.add('collapsed');
-                toggleBtn.classList.add('collapsed');
-              } else {
-                itemsContainer.classList.remove('collapsed');
-                toggleBtn.classList.remove('collapsed');
-              }
-            } catch (e) {
-              console.warn('Could not restore wrapping state:', e);
-            }
+        if (!itemsContainer || !toggleBtn) return;
+
+        itemsContainer.classList.toggle('collapsed');
+        toggleBtn.classList.toggle('collapsed');
+
+        const containerId = container.id;
+        if (containerId) {
+          const isCollapsed = itemsContainer.classList.contains('collapsed');
+          try {
+            localStorage.setItem(`wrapping_collapsed_${containerId}`, isCollapsed);
+          } catch (e) {
+            console.warn('Could not save wrapping state:', e);
           }
         }
       });
-    });
+
+      window.__giftWrappingToggleBound = true;
+    }
   </script>
 {% endif %}
