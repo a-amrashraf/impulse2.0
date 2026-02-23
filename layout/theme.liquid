@@ -211,6 +211,12 @@ document.addEventListener("DOMContentLoaded", function () {
       console.log('🎁 Gift Wrapping Manager init started');
       
       try {
+        // Reset stuck state flags
+        if (this.isUpdating) {
+          console.log('⚠️  Resetting stuck isUpdating flag');
+          this.isUpdating = false;
+        }
+        
         // Fetch and cache the wrapping variant ID on init
         if (!this.variantId) {
           this.variantId = await this.getWrappingVariantId();
@@ -219,9 +225,21 @@ document.addEventListener("DOMContentLoaded", function () {
         
         this.collectCheckboxState();
         this.attachCheckboxListeners();
+        
+        // Preserve checked state and update wrapping if needed
+        setTimeout(() => {
+          const checkedCount = document.querySelectorAll('.wrapping-checkbox[data-item-key]:checked').length;
+          if (checkedCount > 0) {
+            console.log('📝 Restored wrapped items count:', checkedCount);
+            this.updateWrappingFromChecked();
+          }
+        }, 50);
+        
         console.log('✅ Gift wrapping initialized successfully');
       } catch (error) {
         console.error('❌ Gift wrapping init failed:', error);
+        // Reset flag on error to prevent blocking
+        this.isUpdating = false;
       }
     }
     
@@ -301,6 +319,14 @@ document.addEventListener("DOMContentLoaded", function () {
       }
       this.isUpdating = true;
       
+      // Safety timeout to prevent stuck state
+      const timeout = setTimeout(() => {
+        if (this.isUpdating) {
+          console.warn('⚠️  Update timeout - forcing reset');
+          this.isUpdating = false;
+        }
+      }, 10000);
+      
       try {
         const checkedBoxes = document.querySelectorAll('.wrapping-checkbox[data-item-key]:checked');
         const totalToWrap = Array.from(checkedBoxes).reduce((sum, cb) => {
@@ -310,6 +336,7 @@ document.addEventListener("DOMContentLoaded", function () {
         console.log('📊 Total items to wrap:', totalToWrap);
         await this.syncWrappingToCart(totalToWrap);
       } finally {
+        clearTimeout(timeout);
         this.isUpdating = false;
       }
     }
