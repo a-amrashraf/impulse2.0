@@ -205,29 +205,6 @@ document.addEventListener("DOMContentLoaded", function () {
       this.cartItemState = {};
       this.activeWrapItems = {};
       this.variantId = null;
-      
-      // Load persisted state from localStorage
-      try {
-        const saved = localStorage.getItem('gift_wrapping_items');
-        if (saved) {
-          this.activeWrapItems = JSON.parse(saved);
-          console.log('📦 Loaded wrapped items from storage:', Object.keys(this.activeWrapItems).length);
-        }
-      } catch (e) {
-        console.warn('⚠️  Could not load from localStorage:', e.message);
-      }
-    }
-    
-    /**
-     * Save wrapped items state to localStorage
-     */
-    saveState() {
-      try {
-        localStorage.setItem('gift_wrapping_items', JSON.stringify(this.activeWrapItems));
-        console.log('💾 Saved wrapped items to storage');
-      } catch (e) {
-        console.warn('⚠️  Could not save to localStorage:', e.message);
-      }
     }
     
     async init() {
@@ -246,11 +223,11 @@ document.addEventListener("DOMContentLoaded", function () {
           console.log('✅ Wrapping variant ID cached:', this.variantId);
         }
         
-        // Sync with cart and restore checkbox states from localStorage
-        await this.syncCheckboxState();
-        
         // Attach listeners to all checkboxes
         this.attachCheckboxListeners();
+        
+        // Sync checkbox visual states - this restores from saved variant IDs
+        await this.syncCheckboxStateFromStorage();
         
         // Trigger initial wrapping sync if any items are checked
         const checkedCount = document.querySelectorAll('.wrapping-checkbox[data-item-key]:checked').length;
@@ -267,44 +244,59 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     
     /**
-     * Sync visual checkbox states with our tracking (loads from localStorage)
-     * Also cleans up state for items no longer in cart
+     * Save wrapped items by variant ID (persists across item key changes)
      */
-    async syncCheckboxState() {
-      // First, get current cart to clean up old item keys
+    saveStateByVariantId() {
+      const checkboxes = document.querySelectorAll('.wrapping-checkbox[data-item-key]:checked');
+      const wrappedVariantIds = new Set();
+      
+      checkboxes.forEach(cb => {
+        // Extract variant ID from item key (format: variantId:hash)
+        const itemKey = cb.dataset.itemKey;
+        const variantId = itemKey.split(':')[0];
+        wrappedVariantIds.add(variantId);
+      });
+      
       try {
-        const cartResponse = await fetch('/cart.js');
-        const cart = await cartResponse.json();
-        const currentCartKeys = new Set(cart.items.map(item => item.key));
-        
-        // Remove tracked items that are no longer in cart
-        let cleaned = false;
-        Object.keys(this.activeWrapItems).forEach(key => {
-          if (!currentCartKeys.has(key)) {
-            console.log('🗑️  Removing tracking for item no longer in cart:', key);
-            delete this.activeWrapItems[key];
-            cleaned = true;
-          }
-        });
-        
-        if (cleaned) {
-          this.saveState();
+        const saved = Array.from(wrappedVariantIds);
+        localStorage.setItem('gift_wrapping_variant_ids', JSON.stringify(saved));
+        console.log('💾 Saved wrapped variant IDs to storage:', saved);
+      } catch (e) {
+        console.warn('⚠️  Could not save variant IDs to localStorage:', e.message);
+      }
+    }
+
+    /**
+     * Restore checkbox states from saved variant IDs
+     */
+    async syncCheckboxStateFromStorage() {
+      // Load saved variant IDs from localStorage
+      let savedVariantIds = [];
+      try {
+        const saved = localStorage.getItem('gift_wrapping_variant_ids');
+        if (saved) {
+          savedVariantIds = JSON.parse(saved);
+          console.log('📦 Loaded wrapped variant IDs from storage:', savedVariantIds);
         }
       } catch (e) {
-        console.warn('⚠️  Could not sync cart state:', e.message);
+        console.warn('⚠️  Could not load from localStorage:', e.message);
       }
       
-      // Now sync visual checkboxes
+      // Apply saved state to checkboxes based on variant ID
       const checkboxes = document.querySelectorAll('.wrapping-checkbox[data-item-key]');
       checkboxes.forEach(checkbox => {
-        const key = checkbox.dataset.itemKey;
-        // Set checked state from our memory
-        const shouldBeChecked = !!this.activeWrapItems[key];
-        if (checkbox.checked !== shouldBeChecked) {
-          checkbox.checked = shouldBeChecked;
-          if (shouldBeChecked) {
-            console.log('✅ Restored checked state for:', key);
-          }
+        const itemKey = checkbox.dataset.itemKey;
+        const variantId = itemKey.split(':')[0];
+        
+        // Check if this variant ID was previously wrapped
+        if (savedVariantIds.includes(variantId)) {
+          checkbox.checked = true;
+          // Track in memory
+          this.activeWrapItems[itemKey] = true;
+          console.log('✅ Restored checkbox for variant:', variantId);
+        } else {
+          checkbox.checked = false;
+          delete this.activeWrapItems[itemKey];
         }
       });
     }
@@ -361,8 +353,8 @@ document.addEventListener("DOMContentLoaded", function () {
             delete this.activeWrapItems[key];
           }
           
-          // Save state immediately
-          this.saveState();
+          // Save state by variant ID (survives item key changes)
+          this.saveStateByVariantId();
           
           console.log('🔄 Triggering wrapping update...');
           // Immediately update cart
@@ -614,7 +606,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 console.log('✅ Method 3a: Cart drawer updated');
                 updated = true;
                 // Restore checkbox states after DOM update
-                setTimeout(() => this.syncCheckboxState(), 50);
+                setTimeout(() => {
+                  this.syncCheckboxStateFromStorage();
+                  this.attachCheckboxListeners();
+                }, 50);
               }
             } catch (e) {
               console.warn('⚠️  Method 3a failed:', e.message);
@@ -635,7 +630,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 console.log('✅ Method 3b: Cart items updated');
                 updated = true;
                 // Restore checkbox states after DOM update
-                setTimeout(() => this.syncCheckboxState(), 50);
+                setTimeout(() => {
+                  this.syncCheckboxStateFromStorage();
+                  this.attachCheckboxListeners();
+                }, 50);
               }
             } catch (e) {
               console.warn('⚠️  Method 3b failed:', e.message);
