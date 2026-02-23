@@ -88,6 +88,49 @@
         border-radius: 3px;
         border: 1px solid var(--colorBorder);
       }
+      
+      .wrapping-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        cursor: pointer;
+        user-select: none;
+        padding: 5px 0;
+      }
+      
+      .wrapping-header:hover {
+        opacity: 0.8;
+      }
+      
+      .wrapping-toggle-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+        background-color: transparent;
+        border: none;
+        cursor: pointer;
+        padding: 0;
+        font-size: 18px;
+        transition: transform 0.3s ease;
+      }
+      
+      .wrapping-toggle-btn.collapsed {
+        transform: rotate(-90deg);
+      }
+      
+      .wrapping-items-container {
+        max-height: 1000px;
+        overflow: hidden;
+        transition: max-height 0.3s ease, opacity 0.3s ease;
+        opacity: 1;
+      }
+      
+      .wrapping-items-container.collapsed {
+        max-height: 0;
+        opacity: 0;
+      }
     </style>
 
     <style>
@@ -98,9 +141,13 @@
       }
     </style>
     
-    <div class="wrapping-header">🎁 {{ settings.cart_wrapping_text | default: 'Add special gift wrapping' }}</div>
+    <div class="wrapping-header" data-wrapping-toggle>
+      <span>🎁 {{ settings.cart_wrapping_text | default: 'Add special gift wrapping' }}</span>
+      <button class="wrapping-toggle-btn" type="button" aria-label="Toggle gift wrapping options">▼</button>
+    </div>
     
-    {% if wrappable_items.size > 0 %}
+    <div class="wrapping-items-container">
+      {% if wrappable_items.size > 0 %}
       {% for item in wrappable_items %}
         <div class="wrapping-item" data-wrapping-item="{{ item.key }}">
           <input 
@@ -126,5 +173,60 @@
     {% else %}
       <p style="color: #666; font-size: 13px;">No items to wrap</p>
     {% endif %}
+    </div>
   </div>
+  
+  <script>
+    // Gift wrapping collapsible toggle
+    document.addEventListener('DOMContentLoaded', function() {
+      const wrappingHeaders = document.querySelectorAll('[data-wrapping-toggle]');
+      
+      wrappingHeaders.forEach(header => {
+        header.addEventListener('click', function() {
+          const container = this.closest('[data-wrapping-container]');
+          if (!container) return;
+          
+          const itemsContainer = container.querySelector('.wrapping-items-container');
+          const toggleBtn = this.querySelector('.wrapping-toggle-btn');
+          
+          if (!itemsContainer || !toggleBtn) return;
+          
+          // Toggle collapsed class
+          itemsContainer.classList.toggle('collapsed');
+          toggleBtn.classList.toggle('collapsed');
+          
+          // Save state to localStorage
+          const containerId = container.id;
+          if (containerId) {
+            const isCollapsed = itemsContainer.classList.contains('collapsed');
+            try {
+              localStorage.setItem(`wrapping_collapsed_${containerId}`, isCollapsed);
+            } catch (e) {
+              console.warn('Could not save wrapping state:', e);
+            }
+          }
+        });
+        
+        // Restore saved state on page load
+        const container = header.closest('[data-wrapping-container]');
+        const itemsContainer = container.querySelector('.wrapping-items-container');
+        const toggleBtn = header.querySelector('.wrapping-toggle-btn');
+        
+        if (container && itemsContainer) {
+          const containerId = container.id;
+          if (containerId) {
+            try {
+              const isCollapsed = localStorage.getItem(`wrapping_collapsed_${containerId}`) === 'true';
+              if (isCollapsed) {
+                itemsContainer.classList.add('collapsed');
+                toggleBtn.classList.add('collapsed');
+              }
+            } catch (e) {
+              console.warn('Could not restore wrapping state:', e);
+            }
+          }
+        }
+      });
+    });
+  </script>
 {% endif %}
