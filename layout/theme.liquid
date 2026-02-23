@@ -205,13 +205,17 @@ document.addEventListener("DOMContentLoaded", function () {
       this.perItemMode = perItemMode;
       this.isUpdating = false;
       this.initialized = false;
+      this.cartState = {}; // Binary tracking: itemKey -> isInCart (1/0)
+      this.checkedState = {}; // Track which items should be wrapped
     }
     
     init() {
       if (this.initialized) {
-        // Reinitialize event listeners
         this.detachEvents();
       }
+      
+      // Update cart state tracking
+      this.updateCartState();
       
       if (this.perItemMode) {
         this.initPerItemMode();
@@ -222,8 +226,71 @@ document.addEventListener("DOMContentLoaded", function () {
       this.initialized = true;
     }
     
+    updateCartState() {
+      // Build binary state map of current cart items
+      const newState = {};
+      const allItems = document.querySelectorAll('.wrapping-checkbox[data-item-key]');
+      
+      allItems.forEach(checkbox => {
+        const key = checkbox.dataset.itemKey;
+        newState[key] = 1; // Item exists in cart
+        
+        // Preserve checked state if item existed before
+        if (this.cartState[key] === 1 && this.checkedState[key]) {
+          checkbox.checked = true;
+          this.checkedState[key] = true;
+        } else if (!this.checkedState[key]) {
+          this.checkedState[key] = checkbox.checked;
+        }
+      });
+      
+      // Detect removed items (was 1, now 0)
+      const removedItems = Object.keys(this.cartState).filter(key => 
+        this.cartState[key] === 1 && !newState[key]
+      );
+      
+      // Clean up checked state for removed items
+      removedItems.forEach(key => {
+        delete this.checkedState[key];
+      });
+      
+      this.cartState = newState;
+      
+      // Auto-update wrapping if items were removed and we're in bulk mode or per-item with changes
+      if (removedItems.length > 0) {
+        setTimeout(() => this.autoUpdateWrapping(), 100);
+      }
+    }
+    
+    async autoUpdateWrapping() {
+      if (this.isUpdating) return;
+      
+      if (this.perItemMode) {
+        // In per-item mode, recalculate based on checked boxes
+        const checkedBoxes = document.querySelectorAll('.wrapping-checkbox[data-item-key]:checked');
+        const totalToWrap = Array.from(checkedBoxes).reduce((sum, cb) => {
+          return sum + parseInt(cb.dataset.itemQuantity || 1);
+        }, 0);
+        await this.updateWrappingQuantity(totalToWrap);
+      } else {
+        // In bulk mode, update count if master is checked
+        const masterCheckbox = document.querySelector('[data-wrapping-master]');
+        if (masterCheckbox && masterCheckbox.checked) {
+          const allItems = document.querySelectorAll('[data-wrapping-item]');
+          const totalItems = allItems.length;
+          masterCheckbox.dataset.totalItems = totalItems;
+          
+          const countSpan = document.querySelector('[data-wrapping-count]');
+          if (countSpan) {
+            countSpan.textContent = totalItems;
+          }
+          
+          await this.updateWrappingQuantity(totalItems);
+        }
+      }
+    }
+    
     detachEvents() {
-      // Remove old event listeners by cloning and replacing checkboxes
       const oldCheckboxes = document.querySelectorAll('.wrapping-checkbox');
       oldCheckboxes.forEach(cb => {
         const newCb = cb.cloneNode(true);
@@ -249,6 +316,9 @@ document.addEventListener("DOMContentLoaded", function () {
       if (this.isUpdating) return;
       
       const checkbox = event.target;
+      const key = checkbox.dataset.itemKey;
+      this.checkedState[key] = checkbox.checked;
+      
       const checkedBoxes = document.querySelectorAll('.wrapping-checkbox[data-item-key]:checked');
       const totalToWrap = Array.from(checkedBoxes).reduce((sum, cb) => {
         return sum + parseInt(cb.dataset.itemQuantity || 1);

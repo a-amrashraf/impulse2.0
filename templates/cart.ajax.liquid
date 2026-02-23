@@ -16,9 +16,9 @@
   {% for item in cart.items %}
     {%- render 'cart-item', product: item, sizes: '100px', -%}
   {% endfor %}
+  
+  {%- render 'cart-gift-wrapping' -%}
 </div>
-
-{%- render 'cart-gift-wrapping' -%}
 
 <div class="cart__discounts cart__item-sub cart__item-row{% if cart.cart_level_discount_applications == blank %} hide{% endif %}">
   <div>{{ 'cart.general.discounts' | t }}</div>

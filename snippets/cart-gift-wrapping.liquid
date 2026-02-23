@@ -8,12 +8,14 @@
   {% assign wrapping_handle = settings.cart_wrapping_product_handle | default: 'special-wrapping' %}
   {% assign wrapping_in_cart = false %}
   {% assign wrapping_item = null %}
+  {% assign wrapping_qty = 0 %}
   {% assign wrappable_items = cart.items | where_exp: "item", "item.product.handle != wrapping_handle" %}
   
   {% for item in cart.items %}
     {% if item.product.handle == wrapping_handle %}
       {% assign wrapping_in_cart = true %}
       {% assign wrapping_item = item %}
+      {% assign wrapping_qty = item.quantity %}
     {% endif %}
   {% endfor %}
 
@@ -118,7 +120,7 @@
             id="wrap-{{ item.key }}" 
             data-item-key="{{ item.key }}"
             data-item-quantity="{{ item.quantity }}"
-            {% if wrapping_in_cart %}checked{% endif %}
+            data-product-handle="{{ item.product.handle }}"
           >
           <label for="wrap-{{ item.key }}" class="wrapping-label">
             Wrap this item
@@ -141,7 +143,8 @@
           id="wrap-all" 
           data-wrapping-master
           data-total-items="{{ wrappable_items.size }}"
-          {% if wrapping_in_cart %}checked{% endif %}
+          data-wrapping-qty="{{ wrapping_qty }}"
+          {% if wrapping_in_cart and wrapping_qty == wrappable_items.size %}checked{% endif %}
         >
         <label for="wrap-all" class="wrapping-label">
           🎁 {{ settings.cart_wrapping_text | default: 'Add special gift wrapping' }}
