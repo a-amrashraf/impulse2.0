@@ -465,83 +465,116 @@ document.addEventListener("DOMContentLoaded", function () {
       
       // Method 1: Use theme.cart.buildCart if available
       if (typeof theme !== 'undefined' && theme.cart && typeof theme.cart.buildCart === 'function') {
-        console.log('✅ Using theme.cart.buildCart()');
+        console.log('✅ Method 1: Using theme.cart.buildCart()');
         try {
           theme.cart.buildCart();
+          console.log('✅ Method 1 succeeded');
           return;
         } catch (e) {
-          console.warn('⚠️  theme.cart.buildCart error:', e.message);
+          console.warn('⚠️  Method 1 failed:', e.message);
         }
+      } else {
+        console.log('❌ Method 1: theme.cart not available');
       }
       
-      // Method 2: Try to trigger cart update event
-      if (typeof theme !== 'undefined' && window.Shopify && window.Shopify.theme) {
-        console.log('📢 Dispatching cart:update event');
-        try {
-          document.dispatchEvent(new CustomEvent('cart:update'));
-          return;
-        } catch (e) {
-          console.warn('⚠️  cart:update error:', e.message);
-        }
+      // Method 2: Try cart:update event
+      console.log('📢 Method 2: Dispatching cart:update event');
+      try {
+        document.dispatchEvent(new CustomEvent('cart:update'));
+        console.log('✅ Method 2: Event dispatched');
+      } catch (e) {
+        console.warn('⚠️  Method 2 failed:', e.message);
       }
       
-      // Method 3: Fetch cart AJAX and update DOM elements directly
-      console.log('🔗 Fetching cart AJAX endpoint and updating DOM...');
-      Promise.all([
-        fetch('/cart?section_id=cart-drawer').then(r => r.text()),
-        fetch('/cart?section_id=cart-items').then(r => r.text())
-      ]).then(([drawerHtml, itemsHtml]) => {
-        console.log('✅ Cart sections fetched');
-        
-        // Update cart drawer if exists
-        const cartDrawer = document.getElementById('cart-drawer');
-        if (cartDrawer && drawerHtml) {
-          const parser = new DOMParser();
-          const newDOM = parser.parseFromString(drawerHtml, 'text/html');
-          const newDrawer = newDOM.getElementById('cart-drawer');
-          if (newDrawer) {
-            cartDrawer.innerHTML = newDrawer.innerHTML;
-            console.log('✅ Cart drawer DOM updated');
-          }
-        }
-        
-        // Update cart items if exists
-        const itemsContainer = document.getElementById('cart-items');
-        if (itemsContainer && itemsHtml) {
-          const parser = new DOMParser();
-          const newDOM = parser.parseFromString(itemsHtml, 'text/html');
-          const newItems = newDOM.getElementById('cart-items');
-          if (newItems) {
-            itemsContainer.innerHTML = newItems.innerHTML;
-            console.log('✅ Cart items DOM updated');
-          }
-        }
-        
-        // Update cart count if exists
-        const cartCount = document.querySelector('[data-cart-count]');
-        if (cartCount) {
-          fetch('/cart.js').then(r => r.json()).then(cart => {
-            const itemCount = cart.item_count || 0;
-            cartCount.setAttribute('data-cart-count', itemCount);
-            cartCount.textContent = itemCount;
-            console.log('✅ Cart count updated to:', itemCount);
-          });
-        }
-      }).catch(e => {
-        console.warn('⚠️  Cart AJAX fetch error:', e.message);
-        // Fall back to Method 4
-        this.methodFourReload();
-      });
+      // Method 3: Aggressive DOM update with multiple selectors
+      console.log('🔗 Method 3: Fetching and updating cart DOM...');
+      this.updateCartDOMDirectly();
       
-      // Method 4: Try location reload as last resort (after timeout)
+      // Method 4: Fallback reload after delay
+      console.log('⏰ Method 4: Setting reload timeout...');
       this.reloadTimeout = setTimeout(() => {
-        this.methodFourReload();
-      }, 2000);
+        console.log('⚠️  Method 4: Page reload fallback triggered');
+        window.location.reload();
+      }, 3000);
     }
 
-    methodFourReload() {
-      console.log('⚠️  Attempting page reload after timeout...');
-      window.location.reload();
+    updateCartDOMDirectly() {
+      // Try to update cart sections directly via AJAX
+      const sections = ['cart-drawer', 'cart-items', 'cart-page'];
+      
+      Promise.all(sections.map(section => 
+        fetch(`/cart?section_id=${section}`)
+          .then(r => r.text())
+          .catch(e => {
+            console.warn(`⚠️  Could not fetch section ${section}:`, e.message);
+            return null;
+          })
+      )).then(([drawerHtml, itemsHtml, pageHtml]) => {
+        let updated = false;
+        
+        // Try to update cart drawer
+        if (drawerHtml) {
+          const drawer = document.getElementById('cart-drawer');
+          if (drawer) {
+            try {
+              const parser = new DOMParser();
+              const newDOM = parser.parseFromString(drawerHtml, 'text/html');
+              const newDrawer = newDOM.getElementById('cart-drawer');
+              if (newDrawer) {
+                drawer.innerHTML = newDrawer.innerHTML;
+                console.log('✅ Method 3a: Cart drawer updated');
+                updated = true;
+              }
+            } catch (e) {
+              console.warn('⚠️  Method 3a failed:', e.message);
+            }
+          }
+        }
+        
+        // Try to update cart items container
+        if (itemsHtml) {
+          const items = document.getElementById('cart-items');
+          if (items) {
+            try {
+              const parser = new DOMParser();
+              const newDOM = parser.parseFromString(itemsHtml, 'text/html');
+              const newItems = newDOM.getElementById('cart-items');
+              if (newItems) {
+                items.innerHTML = newItems.innerHTML;
+                console.log('✅ Method 3b: Cart items updated');
+                updated = true;
+              }
+            } catch (e) {
+              console.warn('⚠️  Method 3b failed:', e.message);
+            }
+          }
+        }
+        
+        // Try to update cart subtotal and totals
+        fetch('/cart.js').then(r => r.json()).then(cart => {
+          // Update item count elements
+          document.querySelectorAll('[data-cart-count]').forEach(el => {
+            el.setAttribute('data-cart-count', cart.item_count);
+            el.textContent = cart.item_count;
+            console.log('✅ Method 3c: Updated cart count to', cart.item_count);
+            updated = true;
+          });
+          
+          // Update subtotal elements
+          document.querySelectorAll('[data-cart-subtotal]').forEach(el => {
+            el.setAttribute('data-cart-subtotal', cart.total_price);
+            el.textContent = (cart.total_price / 100).toFixed(2);
+            console.log('✅ Method 3d: Updated cart subtotal');
+            updated = true;
+          });
+        });
+        
+        if (updated) {
+          console.log('✅ Method 3: At least one cart element was updated');
+        } else {
+          console.warn('⚠️  Method 3: No cart elements found to update');
+        }
+      });
     }
   }
   
