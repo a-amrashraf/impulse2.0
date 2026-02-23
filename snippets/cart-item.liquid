@@ -47,28 +47,6 @@
         {% endfor %}
       {% endif %}
 
-      {%- if settings.cart_gift_wrap_enable -%}
-        {%- assign gift_wrap_price = settings.cart_gift_wrap_price | default: 500 | times: 1 -%}
-        {%- assign gift_wrap_label = settings.cart_gift_wrap_label | default: "Add gift wrapping" -%}
-        {%- assign is_gift_wrapped = false -%}
-        {%- if product.properties['_gift_wrap'] == 'Yes' -%}
-          {%- assign is_gift_wrapped = true -%}
-        {%- endif -%}
-        
-        <div class="cart__item--gift-wrap">
-          <input 
-            type="checkbox" 
-            id="gift-wrap-{{ product.key }}" 
-            class="gift-wrap-checkbox"
-            data-key="{{ product.key }}"
-            data-price="{{ gift_wrap_price }}"
-            {% if is_gift_wrapped %}checked{% endif %}>
-          <label for="gift-wrap-{{ product.key }}">
-            {{ gift_wrap_label }} (+{{ gift_wrap_price | money }})
-          </label>
-        </div>
-      {%- endif -%}
-
     </div>
     <div class="cart__item-sub">
       <div class="cart__item-actions">
