@@ -9,7 +9,7 @@
   {% comment %} Exclude wrapping product - check by handle and also by the special property we add {% endcomment %}
   {% assign wrappable_items = cart.items | where_exp: "item", "item.product.handle != wrapping_handle and item.properties._gift_wrapping != 'true'" %}
 
-  <div class="cart-gift-wrapping" data-wrapping-container>
+  <div class="cart-gift-wrapping" data-wrapping-container id="gift-wrapping-container-{{ 'now' | date: '%s' }}">
     <style>
       .cart-gift-wrapping {
         margin: 15px 0;

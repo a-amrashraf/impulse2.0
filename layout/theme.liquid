@@ -584,8 +584,23 @@ document.addEventListener("DOMContentLoaded", function () {
           // Remove wrapping if it's in cart
           if (wrappingItem) {
             console.log('➖ REMOVING wrapping product. Key:', wrappingItem.key);
-            const removeResult = await this.updateCartItem(wrappingItem.key, 0);
-            console.log('✅ Remove request completed. Result:', removeResult);
+            
+            try {
+              const removeResult = await this.updateCartItem(wrappingItem.key, 0);
+              console.log('✅ Removal API call completed');
+            } catch (e) {
+              console.error('❌ Removal API failed:', e);
+            }
+            
+            // Also try Shopify's native cart method as fallback
+            if (typeof theme !== 'undefined' && theme.cart && theme.cart.removeItem) {
+              try {
+                console.log('📍 Using theme.cart.removeItem as fallback...');
+                theme.cart.removeItem(wrappingItem.key);
+              } catch (e) {
+                console.warn('⚠️  theme.cart.removeItem failed:', e);
+              }
+            }
             
             // Clear localStorage since we're removing all wrapping
             try {
@@ -595,12 +610,19 @@ document.addEventListener("DOMContentLoaded", function () {
               console.warn('⚠️  Could not clear localStorage:', e.message);
             }
             
-            // Wait a moment and verify removal
-            await new Promise(resolve => setTimeout(resolve, 300));
+            // Wait and verify removal
+            await new Promise(resolve => setTimeout(resolve, 500));
             const verifyResponse = await fetch('/cart.js?t=' + Date.now());
             const verifyCart = await verifyResponse.json();
             const stillThere = verifyCart.items.some(item => item.product_handle === this.wrappingHandle);
-            console.log('✔️  Verification - Wrapping still in cart?', stillThere ? 'YES (ERROR!)' : 'NO (good!)');
+            console.log('✔️  Verification - Wrapping still in cart?', stillThere ? 'YES (will retry)' : 'NO (removed!)');
+            
+            // If still there, try one more time
+            if (stillThere) {
+              console.log('🔁 Wrapping still in cart, attempting removal again...');
+              await this.updateCartItem(wrappingItem.key, 0);
+              await new Promise(resolve => setTimeout(resolve, 300));
+            }
           } else {
             console.log('ℹ️  No wrapping to remove');
           }
@@ -704,11 +726,17 @@ document.addEventListener("DOMContentLoaded", function () {
           body: JSON.stringify(updateData)
         });
         
+        if (!response.ok) {
+          console.error('❌ API returned status:', response.status);
+          throw new Error(`HTTP ${response.status}`);
+        }
+        
         const result = await response.json();
         
         // Log the result
         if (quantity === 0) {
-          console.log('✅ Wrapping product removed successfully');
+          console.log('✅ Wrapping product removal API call completed');
+          console.log('   Response items count:', result.items.length);
         } else {
           console.log('✅ Cart item updated successfully');
         }
@@ -885,7 +913,27 @@ document.addEventListener("DOMContentLoaded", function () {
   // Global instance
   window.giftWrappingManager = null;
   
+  /**
+   * Remove duplicate wrapping containers from DOM
+   */
+  function removeDuplicateWrappingContainers() {
+    const containers = document.querySelectorAll('[data-wrapping-container]');
+    console.log('🔍 Found', containers.length, 'wrapping container(s)');
+    
+    if (containers.length > 1) {
+      console.log('⚠️  DUPLICATE WRAPPING CONTAINERS DETECTED! Keeping first, removing others...');
+      // Keep the first one, remove the rest
+      for (let i = 1; i < containers.length; i++) {
+        console.log('🗑️  Removing duplicate wrapping container', i);
+        containers[i].remove();
+      }
+    }
+  }
+  
   async function initGiftWrapping() {
+    // First, remove any duplicates
+    removeDuplicateWrappingContainers();
+    
     const container = document.querySelector('[data-wrapping-container]');
     
     if (container) {
