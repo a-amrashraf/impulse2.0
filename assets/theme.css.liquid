@@ -3752,6 +3752,10 @@ button[disabled],html input[disabled]{
   white-space:nowrap;
 }
 
+.js-drawer-open-collection-filters{
+  font-family:'Poppins', sans-serif !important;
+}
+
 .btn--tertiary:hover,.rte .btn--tertiary:hover{
     background-color:transparent;
     color:var(--colorTextBody);
@@ -4749,98 +4753,104 @@ svg.icon-trash{
     transition:opacity 0.3s ease 0.7s;
   }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 /* Filters Menu Styling - White Background */
 #FilterDrawer{
-  background-color:#fff;
-  color:#000;
+  background-color:#fff !important;
+  color:#000 !important;
+}
+
+#FilterDrawer .drawer__contents{
+  background-color:#fff !important;
+}
+
+#FilterDrawer .drawer__scrollable{
+  background-color:#fff !important;
+}
+
+#FilterDrawer .drawer__fixed-header{
+  background-color:#fff !important;
 }
 
 #FilterDrawer .drawer__header{
-  border-bottom-color:#e5e5e5;
+  border-bottom-color:#e5e5e5 !important;
 }
 
 #FilterDrawer .drawer__title{
-  color:#000;
+  color:#000 !important;
 }
 
 #FilterDrawer .drawer__close-button{
-  color:#000;
+  color:#000 !important;
 }
 
 #FilterDrawer .drawer__close-button:active{
-  background-color:#f5f5f5;
+  background-color:#f5f5f5 !important;
+}
+
+#FilterDrawer .drawer__close-button .icon{
+  stroke:#000 !important;
 }
 
 #FilterDrawer a:not(.btn){
-  color:#000;
+  color:#000 !important;
 }
 
 #FilterDrawer a:not(.btn):hover{
-  color:#333;
+  color:#333 !important;
 }
 
 #FilterDrawer .collection-sidebar__group{
-  border-top-color:#e5e5e5;
+  border-top-color:#e5e5e5 !important;
 }
 
 #FilterDrawer .collapsible-trigger-btn{
-  color:#000;
+  color:#000 !important;
 }
 
 #FilterDrawer .tag-list a,
 #FilterDrawer .tag-list label{
-  color:#000;
+  color:#000 !important;
 }
 
 #FilterDrawer .tag__checkbox:before{
-  border-color:#d0d0d0;
+  border-color:#d0d0d0 !important;
 }
 
 #FilterDrawer input,
 #FilterDrawer textarea{
-  border-color:#d0d0d0;
-  color:#000;
+  border-color:#d0d0d0 !important;
+  color:#000 !important;
+  background-color:#fff !important;
 }
 
 #FilterDrawer .btn{
-  background-color:#000;
-  color:#fff;
+  background-color:#000 !important;
+  color:#fff !important;
 }
 
 #FilterDrawer .btn:hover{
-  background-color:#333;
+  background-color:#333 !important;
 }
 
 #FilterDrawer .tag--active .tag__checkbox:after,
 #FilterDrawer .tag-list--checkboxes .tag--active a:after,
 #FilterDrawer input:checked~.tag__checkbox:after{
-  background-color:#000;
-  border-color:#000;
+  background-color:#000 !important;
+  border-color:#000 !important;
 }
 
-#FilterDrawer .tag-list--checkboxes a:before,
 #FilterDrawer .tag-list--checkboxes a:before{
-  border-color:#d0d0d0;
+  border-color:#d0d0d0 !important;
 }
 
 #FilterDrawer .icon{
-  color:#000;
+  color:#000 !important;
 }
 
 #FilterDrawer .tag--remove .icon{
-  color:#fff;
+  color:#fff !important;
 }
 
-#FilterDrawer .drawer__close-button .icon{
-  stroke:#000;
-}
-
-=======
->>>>>>> parent of 68c445d (filters menu background)
-=======
->>>>>>> parent of 68c445d (filters menu background)
 .cart-notes{
   height:60px;
   margin-bottom:10px;
@@ -8935,7 +8945,7 @@ html[dir=rtl] .social-sharing__title{
 .collection-filter .btn,.collection-filter select{
     font-size:11px !important;
     height:28px;
-    font-family:'Poppins', sans-serif;
+    font-family:'Poppins', sans-serif !important;
     line-height:1;
     text-align:center;
   }
@@ -8995,6 +9005,14 @@ html[dir=rtl] .social-sharing__title{
       width:14px;
       height:14px;
     }
+
+#SortBy{
+  font-family:'Poppins', sans-serif !important;
+}
+
+#SortBy option{
+  font-family:'Poppins', sans-serif !important;
+}
 
 .collection-filter__item{
   flex:1 1 auto;
