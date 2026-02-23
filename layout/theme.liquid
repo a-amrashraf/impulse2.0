@@ -575,7 +575,10 @@ document.addEventListener("DOMContentLoaded", function () {
         const cart = await cartResponse.json();
         console.log('🛒 Current cart items:', cart.items.length);
         cart.items.forEach((item, idx) => {
-          console.log(`  [${idx}] ${item.product_handle} (qty: ${item.quantity}, variant: ${item.variant_id})`);
+          console.log(`  [${idx}] ${item.product_handle} (qty: ${item.quantity})`);
+          if (item.product_handle === this.wrappingHandle) {
+            console.log(`      └─ wrapped_products: "${item.properties?.wrapped_products || ''}"`);
+          }
         });
         
         // Find wrapping item in cart
@@ -585,46 +588,25 @@ document.addEventListener("DOMContentLoaded", function () {
         console.log('🎁 Wrapping item in cart:', wrappingItem ? 'YES' : 'NO');
         if (wrappingItem) {
           console.log('   Key:', wrappingItem.key, 'Qty:', wrappingItem.quantity);
+          console.log('   Current wrapped_products:', wrappingItem.properties?.wrapped_products || 'empty');
         }
         
-        // Get wrapped product names
+        // Get wrapped product names from currently checked boxes
         const wrappedProductNames = this.getWrappedProductNames();
-        console.log('📝 Wrapped product names:', wrappedProductNames);
+        console.log('📝 New wrapped product names:', wrappedProductNames || '(empty)');
         
-        // Logic: if quantity > 0, need wrapping; if 0, remove it
-        if (quantity > 0) {
+        // Decision logic: Check if wrappedProductNames is empty (all unchecked)
+        if (!wrappedProductNames || wrappedProductNames.trim() === '') {
+          // All items unchecked - REMOVE wrapping entirely
+          console.log('🗑️  All items unchecked - removing wrapping product');
+          
           if (wrappingItem) {
-            // IMPORTANT: Check if it's the SAME quantity AND already has the right properties
-            // Only update if quantity changed OR product names changed
-            const currentWrappedNames = wrappingItem.properties?.wrapped_products || '';
-            const namesMatch = currentWrappedNames === wrappedProductNames;
-            const quantityMatch = wrappingItem.quantity === quantity;
-            
-            if (!quantityMatch || !namesMatch) {
-              console.log('⬆️  Updating wrapping quantity from', wrappingItem.quantity, 'to', quantity);
-              console.log('📝 Updating wrapped product names:', wrappedProductNames);
-              await this.updateCartItem(wrappingItem.key, quantity, wrappedProductNames);
-            } else {
-              console.log('✅ Wrapping already correct - no update needed');
-            }
-          } else {
-            // Add wrapping product for the first time
-            console.log('➕ Adding wrapping product with quantity:', quantity);
-            console.log('📝 With wrapped product names:', wrappedProductNames);
-            await this.addWrappingProduct(quantity, wrappedProductNames);
-          }
-        } else {
-          // Remove wrapping if it's in cart
-          if (wrappingItem) {
-            console.log('➖ REMOVING WRAPPING PRODUCT');
-            console.log('   Key:', wrappingItem.key);
-            console.log('   Current quantity:', wrappingItem.quantity);
-            
+            // Remove the wrapping item using multiple methods
             let removed = false;
             
-            // Attempt 1: Direct API call
+            // Attempt 1: Direct API call to set quantity to 0
             try {
-              console.log('Attempt 1️⃣: Using /cart/change.js API...');
+              console.log('Attempt 1️⃣: Using /cart/change.js API to set quantity to 0...');
               const result = await this.updateCartItem(wrappingItem.key, 0);
               
               // Check if actually removed
@@ -690,7 +672,7 @@ document.addEventListener("DOMContentLoaded", function () {
               }
             }
             
-            // Clear localStorage regardless
+            // Clear localStorage
             try {
               localStorage.removeItem('gift_wrapping_variant_ids');
               console.log('🗑️  Cleared localStorage');
@@ -715,7 +697,33 @@ document.addEventListener("DOMContentLoaded", function () {
               console.error('❌ Final verification failed:', e.message);
             }
           } else {
-            console.log('ℹ️  No wrapping to remove');
+            console.log('ℹ️  No wrapping item in cart to remove');
+          }
+        } else {
+          // Items are checked - UPDATE or ADD wrapping
+          if (wrappingItem) {
+            // Check if quantity or product names changed
+            const currentWrappedNames = wrappingItem.properties?.wrapped_products || '';
+            const namesMatch = currentWrappedNames === wrappedProductNames;
+            const quantityMatch = wrappingItem.quantity === quantity;
+            
+            if (!quantityMatch || !namesMatch) {
+              console.log('⬆️  Wrapping needs update');
+              console.log('   Quantity changed:', !quantityMatch, `(${wrappingItem.quantity} → ${quantity})`);
+              console.log('   Names changed:', !namesMatch);
+              if (!namesMatch) {
+                console.log(`     Old: "${currentWrappedNames}"`);
+                console.log(`     New: "${wrappedProductNames}"`);
+              }
+              await this.updateCartItem(wrappingItem.key, quantity, wrappedProductNames);
+            } else {
+              console.log('✅ Wrapping already correct - no update needed');
+            }
+          } else {
+            // Add wrapping product for the first time
+            console.log('➕ Adding wrapping product with quantity:', quantity);
+            console.log('📝 With wrapped product names:', wrappedProductNames);
+            await this.addWrappingProduct(quantity, wrappedProductNames);
           }
         }
         
