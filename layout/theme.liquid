@@ -195,27 +195,18 @@ document.addEventListener("DOMContentLoaded", function () {
 <script>
 (function() {
   'use strict';
-  
-  // PRIORITY 1: Remove duplicate wrapping containers IMMEDIATELY
+
   function removeDuplicateWrappingContainers() {
     const containers = document.querySelectorAll('[data-wrapping-container]');
-    if (containers.length > 1) {
-      console.log('⚠️  DUPLICATES DETECTED:', containers.length, 'containers found');
-      // Keep the FIRST one only
-      for (let i = 1; i < containers.length; i++) {
-        console.log('   🗑️  Removing duplicate container', i);
-        if (containers[i].parentNode) {
-          containers[i].parentNode.removeChild(containers[i]);
-        }
-      }
-      console.log('✅ Kept only first container, removed', containers.length - 1, 'duplicates');
+    if (containers.length <= 1) return;
+
+    for (let index = 1; index < containers.length; index++) {
+      containers[index].remove();
     }
   }
-  
-  // Remove duplicates on script load
+
   removeDuplicateWrappingContainers();
-  
-  // Watch for duplicates being added afterwards (only react when wrapping nodes are involved)
+
   const dupObserver = new MutationObserver((mutations) => {
     const wrappingNodeTouched = mutations.some((mutation) => {
       return Array.from(mutation.addedNodes || []).some((node) => {
@@ -224,40 +215,24 @@ document.addEventListener("DOMContentLoaded", function () {
       });
     });
 
-    if (!wrappingNodeTouched) {
-      return;
-    }
-
-    const containers = document.querySelectorAll('[data-wrapping-container]');
-    if (containers.length > 1) {
-      console.log('🚨 Duplicate detected during mutation, removing...');
-      removeDuplicateWrappingContainers();
-    }
+    if (!wrappingNodeTouched) return;
+    removeDuplicateWrappingContainers();
   });
-  
+
   dupObserver.observe(document.body, {
     childList: true,
     subtree: true
   });
 
-  // Global delegated toggle for wrapping accordion (works immediately after any AJAX DOM swap)
   if (!window.__giftWrappingToggleHandlerBound) {
     document.addEventListener('click', (event) => {
       const header = event.target.closest('[data-wrapping-toggle]');
-      if (!header) {
-        return;
-      }
+      if (!header) return;
 
       const container = header.closest('[data-wrapping-container]');
-      if (!container) {
-        return;
-      }
-
-      const itemsContainer = container.querySelector('.wrapping-items-container');
+      const itemsContainer = container?.querySelector('.wrapping-items-container');
       const toggleBtn = header.querySelector('.wrapping-toggle-btn');
-      if (!itemsContainer || !toggleBtn) {
-        return;
-      }
+      if (!itemsContainer || !toggleBtn) return;
 
       itemsContainer.classList.toggle('collapsed');
       toggleBtn.classList.toggle('collapsed');
@@ -265,232 +240,124 @@ document.addEventListener("DOMContentLoaded", function () {
 
     window.__giftWrappingToggleHandlerBound = true;
   }
-  
+
   const wrappingHandle = {{ settings.cart_wrapping_product_handle | default: 'special-wrapping' | json }};
-  
+
   class GiftWrappingManager {
     constructor() {
       this.wrappingHandle = wrappingHandle;
       this.isUpdating = false;
-      this.cartItemState = {};
-      this.activeWrapItems = {};
       this.variantId = null;
+      this.activeWrapItems = {};
+      this.reloadTimeout = null;
     }
-    
+
     async init() {
-      console.log('🎁 Gift Wrapping Manager init started');
-      
       try {
-        // Reset stuck state flags
         if (this.isUpdating) {
-          console.log('⚠️  Resetting stuck isUpdating flag');
           this.isUpdating = false;
         }
-        
-        // Fetch and cache the wrapping variant ID on init
+
         if (!this.variantId) {
           this.variantId = await this.getWrappingVariantId();
-          console.log('✅ Wrapping variant ID cached:', this.variantId);
         }
 
-        // Attach listeners to all checkboxes
         this.attachCheckboxListeners();
-        
-        // Sync checkbox visual states - this restores from saved variant IDs
         await this.syncCheckboxStateFromStorage();
-        
-        // DO NOT call updateWrappingFromChecked() on init to avoid re-adding wrapping
-        // The wrapping product should already be in the cart at the correct quantity
-        // Only sync when user manually toggles a checkbox
-        
-        console.log('✅ Gift wrapping initialized successfully');
-      } catch (error) {
-        console.error('❌ Gift wrapping init failed:', error);
+      } catch (_) {
         this.isUpdating = false;
       }
     }
 
-    /**
-     * Save wrapped items by variant ID (persists across item key changes)
-     */
     saveStateByVariantId() {
-      const checkboxes = document.querySelectorAll('.wrapping-checkbox[data-item-key]:checked');
-      const wrappedVariantIds = new Set();
-      
-      checkboxes.forEach(cb => {
-        // Extract variant ID from item key (format: variantId:hash)
-        const itemKey = cb.dataset.itemKey;
+      const checked = document.querySelectorAll('.wrapping-checkbox[data-item-key]:checked');
+      const variantIds = new Set();
+
+      checked.forEach((checkbox) => {
+        const itemKey = checkbox.dataset.itemKey || '';
         const variantId = itemKey.split(':')[0];
-        wrappedVariantIds.add(variantId);
+        if (variantId) variantIds.add(variantId);
       });
-      
+
       try {
-        const saved = Array.from(wrappedVariantIds);
-        localStorage.setItem('gift_wrapping_variant_ids', JSON.stringify(saved));
-        console.log('💾 Saved wrapped variant IDs to storage:', saved);
-      } catch (e) {
-        console.warn('⚠️  Could not save variant IDs to localStorage:', e.message);
-      }
+        localStorage.setItem('gift_wrapping_variant_ids', JSON.stringify(Array.from(variantIds)));
+      } catch (_) {}
     }
 
-    /**
-     * Restore checkbox states from saved variant IDs
-     */
     async syncCheckboxStateFromStorage() {
-      // Load saved variant IDs from localStorage
       let savedVariantIds = [];
+
       try {
         const saved = localStorage.getItem('gift_wrapping_variant_ids');
-        if (saved) {
-          savedVariantIds = JSON.parse(saved);
-          console.log('📦 Loaded wrapped variant IDs from storage:', savedVariantIds);
-        }
-      } catch (e) {
-        console.warn('⚠️  Could not load from localStorage:', e.message);
-      }
-      
-      // Apply saved state to checkboxes based on variant ID
+        if (saved) savedVariantIds = JSON.parse(saved);
+      } catch (_) {}
+
       const checkboxes = document.querySelectorAll('.wrapping-checkbox[data-item-key]');
-      checkboxes.forEach(checkbox => {
-        const itemKey = checkbox.dataset.itemKey;
+      checkboxes.forEach((checkbox) => {
+        const itemKey = checkbox.dataset.itemKey || '';
         const variantId = itemKey.split(':')[0];
-        
-        // Check if this variant ID was previously wrapped
+
         if (savedVariantIds.includes(variantId)) {
           checkbox.checked = true;
-          // Track in memory
           this.activeWrapItems[itemKey] = true;
-          console.log('✅ Restored checkbox for variant:', variantId);
         } else {
           checkbox.checked = false;
           delete this.activeWrapItems[itemKey];
         }
       });
     }
-    
-    /**
-     * Attach change listeners to all checkboxes
-     */
+
+    isWrappingLineItem(checkbox, itemElement) {
+      const itemKey = checkbox.dataset.itemKey || '';
+      const wrappingItemKey = itemElement?.dataset.wrappingItem || '';
+      const titleText = (itemElement?.querySelector('.wrapping-item-title')?.textContent || '').toLowerCase().trim();
+      const variantId = itemKey.split(':')[0];
+
+      return (
+        wrappingItemKey.includes('special-wrapping') ||
+        wrappingItemKey.includes('special wrapping') ||
+        titleText === 'special wrapping' ||
+        titleText === 'gift wrapping' ||
+        titleText === 'special wrap' ||
+        titleText.includes('special wrapping') ||
+        titleText.includes('special wrap') ||
+        titleText.includes('gift wrap') ||
+        (this.variantId && variantId === this.variantId.toString())
+      );
+    }
+
     attachCheckboxListeners() {
-      console.log('🔍 attachCheckboxListeners called - scanning DOM...');
-      
-      // Get ALL checkboxes first
-      const allCheckboxesRaw = document.querySelectorAll('.wrapping-checkbox[data-item-key]');
-      console.log('📦 Total checkboxes found in DOM:', allCheckboxesRaw.length);
-      
-      // Log each checkbox for debugging
-      allCheckboxesRaw.forEach((cb, idx) => {
-        const parent = cb.closest('.wrapping-item');
-        const itemKey = cb.dataset.itemKey;
-        const titleEl = parent?.querySelector('.wrapping-item-title');
-        const titleText = titleEl?.textContent?.trim() || 'Unknown';
-        console.log(`  [${idx}] Title: "${titleText}", Key: ${itemKey}`);
-      });
-      
-      // IMPORTANT: First pass - remove any wrapping product checkboxes from DOM entirely
+      const allCheckboxes = document.querySelectorAll('.wrapping-checkbox[data-item-key]');
       const wrappingItemsToRemove = [];
-      allCheckboxesRaw.forEach(cb => {
-        const parent = cb.closest('.wrapping-item');
-        if (!parent) return;
-        
-        const itemKey = cb.dataset.itemKey;
-        const wrappingItemKey = parent.dataset.wrappingItem;
-        const titleEl = parent.querySelector('.wrapping-item-title');
-        const titleText = (titleEl?.textContent || '').toLowerCase().trim();
-        
-        // Extract variant ID for comparison
-        const variantId = itemKey.split(':')[0];
-        
-        // VERY aggressive detection - check EVERYTHING
-        const isWrappingProduct = 
-          // Check handle in data attribute
-          wrappingItemKey?.includes('special-wrapping') ||
-          wrappingItemKey?.includes('special wrapping') ||
-          // Check product title text
-          titleText === 'special wrapping' ||
-          titleText === 'gift wrapping' ||
-          titleText === 'special wrap' ||
-          titleText.includes('special wrapping') || 
-          titleText.includes('special wrap') ||
-          titleText.includes('gift wrap') ||
-          // Variant ID comparison (if this.variantId is set)
-          (this.variantId && variantId === this.variantId.toString());
-        
-        if (isWrappingProduct) {
-          console.log('🗑️  DETECTED WRAPPING PRODUCT - Removing from DOM:', titleText, '(Key:', itemKey, ', Variant:', variantId, ', This Variant ID:', this.variantId, ')');
-          wrappingItemsToRemove.push(parent);
+
+      allCheckboxes.forEach((checkbox) => {
+        const itemElement = checkbox.closest('.wrapping-item');
+        if (!itemElement) return;
+
+        if (this.isWrappingLineItem(checkbox, itemElement)) {
+          wrappingItemsToRemove.push(itemElement);
         }
       });
-      
-      // Remove detected wrapping products
-      wrappingItemsToRemove.forEach(item => {
-        item.remove();
-      });
-      
-      console.log('🗑️  Removed', wrappingItemsToRemove.length, 'wrapping product item(s) from DOM');
-      
-      // Now get only the legitimate product checkboxes
-      let checkboxes = Array.from(document.querySelectorAll('.wrapping-checkbox[data-item-key]'));
-      console.log('✅ Final legitimate checkboxes to listen to:', checkboxes.length);
-      checkboxes.forEach((cb, idx) => {
-        const parent = cb.closest('.wrapping-item');
-        const titleEl = parent?.querySelector('.wrapping-item-title');
-        console.log(`  [${idx}] ${titleEl?.textContent?.trim()}`);
-      });
-      
-      checkboxes.forEach(checkbox => {
-        // Clone to remove old listeners
-        const newCheckbox = checkbox.cloneNode(true);
-        checkbox.parentNode.replaceChild(newCheckbox, checkbox);
-        
-        // Attach new listener
-        newCheckbox.addEventListener('change', (e) => {
-          const key = e.target.dataset.itemKey;
-          const isChecked = e.target.checked;
-          console.log('\n╔════════════════════════════════════════╗');
-          console.log('║  ✓✓✓ CHECKBOX CHANGE EVENT FIRED ✓✓✓  ║');
-          console.log('╚════════════════════════════════════════╝');
-          console.log('🔑 KEY:', key);
-          console.log('✅ CHECKED:', isChecked);
-          console.log('🎁 Manager instance:', typeof this === 'object' ? 'YES' : 'NO');
-          console.log('📌 Has updateWrappingFromChecked:', typeof this?.updateWrappingFromChecked === 'function' ? 'YES' : 'NO');
-          
-          console.log('\n📝 Before state update:');
-          console.log('   activeWrapItems count:', Object.keys(this.activeWrapItems).length);
-          console.log('   Items:', Object.keys(this.activeWrapItems).join(', ') || '(none)');
-          
+
+      wrappingItemsToRemove.forEach((item) => item.remove());
+
+      const legitCheckboxes = Array.from(document.querySelectorAll('.wrapping-checkbox[data-item-key]'));
+      legitCheckboxes.forEach((checkbox) => {
+        const fresh = checkbox.cloneNode(true);
+        checkbox.parentNode.replaceChild(fresh, checkbox);
+
+        fresh.addEventListener('change', async (event) => {
+          const key = event.target.dataset.itemKey;
+          const isChecked = event.target.checked;
+
           if (isChecked) {
             this.activeWrapItems[key] = true;
-            console.log('   ACTION: Adding', key, 'to activeWrapItems');
           } else {
             delete this.activeWrapItems[key];
-            console.log('   ACTION: Removing', key, 'from activeWrapItems');
           }
-          
-          console.log('\n📝 After state update:');
-          console.log('   activeWrapItems count:', Object.keys(this.activeWrapItems).length);
-          console.log('   Items:', Object.keys(this.activeWrapItems).join(', ') || '(none)');
-          
-          // Save state by variant ID
-          console.log('\n💾 Saving state by variant ID...');
+
           this.saveStateByVariantId();
-          
-          console.log('\n📞 CALLING updateWrappingFromChecked()...');
-          try {
-            const result = this.updateWrappingFromChecked();
-            console.log('📞 updateWrappingFromChecked returned:', result ? 'PROMISE' : 'undefined');
-            if (result && typeof result.then === 'function') {
-              console.log('   ⏳ Waiting for promise...');
-              result.then(() => {
-                console.log('   ✅ Promise resolved successfully');
-              }).catch(err => {
-                console.error('   ❌ Promise rejected:', err);
-              });
-            }
-          } catch (error) {
-            console.error('❌ ERROR calling updateWrappingFromChecked:', error);
-          }
-          console.log('');
+          await this.updateWrappingFromChecked();
         });
       });
     }
@@ -501,21 +368,16 @@ document.addEventListener("DOMContentLoaded", function () {
      */
     async getProductQuantityInCart(variantId) {
       try {
-        const cartResponse = await fetch('/cart.js');
+        const cartResponse = await fetch('/cart.js?t=' + Date.now());
         const cart = await cartResponse.json();
-        
-        // Sum all quantities for this variant ID
-        const totalQuantity = cart.items.reduce((sum, item) => {
+
+        return cart.items.reduce((sum, item) => {
           if (item.variant_id.toString() === variantId.toString()) {
             return sum + item.quantity;
           }
           return sum;
         }, 0);
-        
-        console.log(`📦 Product variant ${variantId} total quantity in cart: ${totalQuantity}`);
-        return totalQuantity;
-      } catch (error) {
-        console.error('❌ Error getting product quantity:', error);
+      } catch (_) {
         return 0;
       }
     }
@@ -527,50 +389,35 @@ document.addEventListener("DOMContentLoaded", function () {
     async validateWrappingQuantity() {
       try {
         const checkedBoxes = document.querySelectorAll('.wrapping-checkbox[data-item-key]:checked');
-        const productVariantMap = new Map(); // variant ID -> { checkedCount, cartQuantity }
-        
-        // Group checked items by product variant
-        for (const cb of checkedBoxes) {
-          const itemKey = cb.dataset.itemKey;
+        const productVariantMap = new Map();
+
+        for (const checkbox of checkedBoxes) {
+          const itemKey = checkbox.dataset.itemKey;
           const variantId = itemKey.split(':')[0];
-          const quantity = parseInt(cb.dataset.itemQuantity || 1);
-          
+          const quantity = parseInt(checkbox.dataset.itemQuantity || 1, 10);
+
           if (!productVariantMap.has(variantId)) {
-            productVariantMap.set(variantId, { checkedCount: 0, cartQuantity: 0 });
+            productVariantMap.set(variantId, 0);
           }
-          
-          const entry = productVariantMap.get(variantId);
-          entry.checkedCount += quantity;
+
+          productVariantMap.set(variantId, productVariantMap.get(variantId) + quantity);
         }
-        
-        // For each product variant, check if quantity is valid
-        let errors = [];
-        for (const [variantId, data] of productVariantMap.entries()) {
+
+        const errors = [];
+        for (const [variantId, checkedCount] of productVariantMap.entries()) {
           const cartQuantity = await this.getProductQuantityInCart(variantId);
-          data.cartQuantity = cartQuantity;
-          
-          if (data.checkedCount > cartQuantity) {
-            errors.push(`Product variant ${variantId}: trying to wrap ${data.checkedCount} but only ${cartQuantity} in cart`);
+          if (checkedCount > cartQuantity) {
+            errors.push({ checkedCount, cartQuantity });
           }
         }
-        
+
         if (errors.length > 0) {
-          console.warn('⚠️  Wrapping quantity validation errors:');
-          errors.forEach(err => console.warn('  - ' + err));
-          
-          // Show user-friendly alert
-          alert(`Unable to wrap all selected items:\n\n${errors.map(err => {
-            const match = err.match(/trying to wrap (\d+) but only (\d+)/);
-            return match ? `You selected to wrap ${match[1]} items, but only ${match[2]} available in cart` : err;
-          }).join('\n\n')}`);
-          
-          return false; // Don't proceed with wrapping
+          alert(`Unable to wrap all selected items:\n\n${errors.map(({ checkedCount, cartQuantity }) => `You selected to wrap ${checkedCount} items, but only ${cartQuantity} available in cart`).join('\n\n')}`);
+          return false;
         }
-        
-        console.log('✅ Wrapping quantity validation passed');
-        return true; // Validation passed
-      } catch (error) {
-        console.error('❌ Error validating wrapping quantity:', error);
+
+        return true;
+      } catch (_) {
         return false;
       }
     }
@@ -579,65 +426,28 @@ document.addEventListener("DOMContentLoaded", function () {
      * Calculate total quantity from checked boxes and sync to cart
      */
     async updateWrappingFromChecked() {
-      console.log('\n╔═══════════════════════════════════════════════════╗');
-      console.log('║  UPDATE WRAPPING FROM CHECKED CALLED              ║');
-      console.log('╚═══════════════════════════════════════════════════╝\n');
-      
-      if (this.isUpdating) {
-        console.log('⏳ Already updating, skipping...');
-        return;
-      }
+      if (this.isUpdating) return;
+
       this.isUpdating = true;
-      console.log('🔒 Set isUpdating = true');
-      
-      // Safety timeout to prevent stuck state
       const timeout = setTimeout(() => {
-        if (this.isUpdating) {
-          console.warn('⚠️  Update timeout - forcing reset');
-          this.isUpdating = false;
-        }
+        this.isUpdating = false;
       }, 10000);
-      
+
       try {
-        console.log('📋 Getting all checked checkboxes from DOM...');
         const checkedBoxes = document.querySelectorAll('.wrapping-checkbox[data-item-key]:checked');
-        console.log('   Found', checkedBoxes.length, 'checked boxes');
-        
-        Array.from(checkedBoxes).forEach((cb, idx) => {
-          console.log(`   [${idx}] Key: ${cb.dataset.itemKey}, Qty: ${cb.dataset.itemQuantity}`);
-        });
-        
-        const totalToWrap = Array.from(checkedBoxes).reduce((sum, cb) => {
-          return sum + parseInt(cb.dataset.itemQuantity || 1);
+        const totalToWrap = Array.from(checkedBoxes).reduce((sum, checkbox) => {
+          return sum + parseInt(checkbox.dataset.itemQuantity || 1, 10);
         }, 0);
-        
-        console.log('📊 Total items to wrap:', totalToWrap);
-        
-        // IMPORTANT: If no checkboxes are checked, skip validation and go straight to removal
+
         if (totalToWrap > 0) {
-          console.log('✅ totalToWrap > 0, will validate...');
-          // Validate wrapping quantities first
           const isValid = await this.validateWrappingQuantity();
-          if (!isValid) {
-            console.log('❌ Wrapping quantity validation failed, aborting syncing');
-            clearTimeout(timeout);
-            this.isUpdating = false;
-            return;
-          }
-        } else {
-          console.log('⚠️  totalToWrap === 0 (all boxes unchecked)');
-          console.log('ℹ️  Skipping validation, proceeding directly to removal...');
+          if (!isValid) return;
         }
-        
-        console.log('📞 Calling syncWrappingToCart with totalToWrap:', totalToWrap);
+
         await this.syncWrappingToCart(totalToWrap);
-        console.log('=== updateWrappingFromChecked COMPLETED ===\n');
-      } catch (error) {
-        console.error('❌ updateWrappingFromChecked ERROR:', error);
       } finally {
         clearTimeout(timeout);
         this.isUpdating = false;
-        console.log('🔓 Set isUpdating = false');
       }
     }
     
@@ -645,195 +455,35 @@ document.addEventListener("DOMContentLoaded", function () {
      * Sync wrapping quantity to cart with product names
      */
     async syncWrappingToCart(quantity) {
-      console.log('\n╔═══════════════════════════════════════════════════╗');
-      console.log('║  SYNC WRAPPING TO CART CALLED [Qty: ' + String(quantity).padEnd(3) + '] ║');
-      console.log('╚═══════════════════════════════════════════════════╝\n');
-      console.log('📥 Incoming quantity param:', quantity);
-      
       try {
-        console.log('📤 Fetching current cart from /cart.js...');
-        // Get current cart
-        const cartResponse = await fetch('/cart.js?t=' + Date.now()); // Cache bust
+        const cartResponse = await fetch('/cart.js?t=' + Date.now());
         const cart = await cartResponse.json();
-        console.log('✅ Cart fetched. Items:', cart.items.length);
-        cart.items.forEach((item, idx) => {
-          console.log(`   [${idx}] ${item.handle} (qty: ${item.quantity})`);
-          if (item.handle === this.wrappingHandle) {
-            console.log(`      └─ wrapped_products: "${item.properties?.wrapped_products || '(empty)'}"`);
-          }
-        });
-        
-        // Find wrapping item in cart
-        console.log('🔍 Looking for wrapping item with handle:', this.wrappingHandle);
-        const wrappingItem = cart.items.find(item => 
-          item.handle === this.wrappingHandle
-        );
-        console.log('🎁 Wrapping item found:', wrappingItem ? 'YES' : 'NO');
-        if (wrappingItem) {
-          console.log('   Key:', wrappingItem.key);
-          console.log('   Qty:', wrappingItem.quantity);
-          console.log('   wrapped_products:', wrappingItem.properties?.wrapped_products || '(empty)');
-        }
-        
-        // Get wrapped product names from currently checked boxes
-        console.log('\n📋 Calling getWrappedProductNames()...');
+        const wrappingItem = cart.items.find((item) => item.handle === this.wrappingHandle);
         const wrappedProductNames = this.getWrappedProductNames();
-        console.log('✅ Result:', wrappedProductNames || '(EMPTY STRING)');
-        
-        // Decision logic: Check if wrappedProductNames is empty (all unchecked)
         const isEmpty = !wrappedProductNames || wrappedProductNames.trim() === '';
-        console.log('\n🎯 DECISION LOGIC:');
-        console.log('   wrappedProductNames:', JSON.stringify(wrappedProductNames));
-        console.log('   isEmpty check: !wrappedProductNames =', !wrappedProductNames);
-        console.log('   trim check: wrappedProductNames.trim() === "" =', wrappedProductNames?.trim() === '');
-        console.log('   FINAL isEmpty:', isEmpty);
-        
+
         if (isEmpty) {
-          console.log('\n╔═══════════════════════════════════════════════════╗');
-          console.log('║ 🗑️✂️✂️ REMOVING WRAPPING PRODUCT ✂️✂️🗑️          ║');
-          console.log('╚═══════════════════════════════════════════════════╝\n');
-          
           if (wrappingItem) {
-            console.log('💥 Wrapping item FOUND in cart, attempting removal...');
-            console.log('   Handle:', wrappingItem.handle);
-            console.log('   Key:', wrappingItem.key);
-            console.log('   Quantity:', wrappingItem.quantity);
-            
-            let removed = false;
-            
-            // Attempt 1: Direct API call
-            try {
-              console.log('\nAttempt 1️⃣: Using /cart/change.js API...');
-              const result = await this.updateCartItem(wrappingItem.key, 0);
-              
-              // Check if actually removed
-              const hasWrapping = result.items.some(item => item.handle === this.wrappingHandle);
-              if (!hasWrapping) {
-                console.log('✅✅✅ Attempt 1 SUCCESS - Wrapping removed!');
-                removed = true;
-              } else {
-                console.log('❌ Attempt 1 - Wrapping still in cart');
-              }
-            } catch (e) {
-              console.error('❌ Attempt 1 failed:', e.message);
-            }
-            
-            // Attempt 2: Try theme.cart.removeItem if available
-            if (!removed && typeof theme !== 'undefined' && theme.cart && typeof theme.cart.removeItem === 'function') {
-              try {
-                console.log('\nAttempt 2️⃣: Using theme.cart.removeItem...');
-                await theme.cart.removeItem(wrappingItem.key);
-                
-                // Verify after a delay
-                await new Promise(resolve => setTimeout(resolve, 200));
-                const verifyRes = await fetch('/cart.js?t=' + Date.now());
-                const verifyCart = await verifyRes.json();
-                const hasWrapping = verifyCart.items.some(item => item.handle === this.wrappingHandle);
-                
-                if (!hasWrapping) {
-                  console.log('✅✅✅ Attempt 2 SUCCESS - Wrapping removed!');
-                  removed = true;
-                } else {
-                  console.log('❌ Attempt 2 - Still in cart');
-                }
-              } catch (e) {
-                console.error('❌ Attempt 2 failed:', e.message);
-              }
-            }
-            
-            // Attempt 3: Try Fetch with different payload structure
-            if (!removed) {
-              try {
-                console.log('\nAttempt 3️⃣: Using /cart/change.js with alternate payload...');
-                const response = await fetch('/cart/change.js', {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json'
-                  },
-                  body: JSON.stringify({
-                    line: wrappingItem.key,
-                    quantity: 0
-                  })
-                });
-                
-                if (response.ok) {
-                  const result = await response.json();
-                  const hasWrapping = result.items.some(item => item.handle === this.wrappingHandle);
-                  if (!hasWrapping) {
-                    console.log('✅✅✅ Attempt 3 SUCCESS - Wrapping removed!');
-                    removed = true;
-                  }
-                }
-              } catch (e) {
-                console.error('❌ Attempt 3 failed:', e.message);
-              }
-            }
-            
-            // Clear localStorage
-            try {
-              localStorage.removeItem('gift_wrapping_variant_ids');
-              console.log('🗑️  Cleared localStorage');
-            } catch (e) {
-              console.warn('⚠️  Could not clear localStorage');
-            }
-            
-            // Final verification
-            await new Promise(resolve => setTimeout(resolve, 300));
-            try {
-              const finalCheck = await fetch('/cart.js?t=' + Date.now());
-              const finalCart = await finalCheck.json();
-              const stillThere = finalCart.items.some(item => item.handle === this.wrappingHandle);
-              
-              if (stillThere) {
-                console.log('\n⚠️⚠️⚠️ CRITICAL: Wrapping STILL IN CART after all removal attempts!');
-                console.log('Final cart items:');
-                finalCart.items.forEach((item, idx) => {
-                  console.log(`   [${idx}] ${item.handle} (qty: ${item.quantity})`);
-                });
-              } else {
-                console.log('\n✅✅✅ FINAL VERIFICATION: Wrapping successfully removed!');
-              }
-            } catch (e) {
-              console.error('❌ Final verification failed:', e.message);
-            }
-          } else {
-            console.log('⚠️  No wrapping item in cart to remove');
+            await this.updateCartItem(wrappingItem.key, 0);
+          }
+
+          try {
+            localStorage.removeItem('gift_wrapping_variant_ids');
+          } catch (_) {}
+        } else if (wrappingItem) {
+          const currentWrappedNames = wrappingItem.properties?.wrapped_products || '';
+          const namesMatch = currentWrappedNames === wrappedProductNames;
+          const quantityMatch = wrappingItem.quantity === quantity;
+
+          if (!quantityMatch || !namesMatch) {
+            await this.updateCartItem(wrappingItem.key, quantity, wrappedProductNames);
           }
         } else {
-          // Items are checked - UPDATE or ADD wrapping
-          console.log('\n✏️ ITEMS ARE CHECKED - UPDATE OR ADD WRAPPING');
-          if (wrappingItem) {
-            // Check if quantity or product names changed
-            const currentWrappedNames = wrappingItem.properties?.wrapped_products || '';
-            const namesMatch = currentWrappedNames === wrappedProductNames;
-            const quantityMatch = wrappingItem.quantity === quantity;
-            
-            if (!quantityMatch || !namesMatch) {
-              console.log('⬆️  Wrapping needs update');
-              console.log('   Quantity changed:', !quantityMatch, `(${wrappingItem.quantity} → ${quantity})`);
-              console.log('   Names changed:', !namesMatch);
-              if (!namesMatch) {
-                console.log(`     Old: "${currentWrappedNames}"`);
-                console.log(`     New: "${wrappedProductNames}"`);
-              }
-              await this.updateCartItem(wrappingItem.key, quantity, wrappedProductNames);
-            } else {
-              console.log('✅ Wrapping already correct - no update needed');
-            }
-          } else {
-            // Add wrapping product for the first time
-            console.log('➕ Adding wrapping product with quantity:', quantity);
-            console.log('📝 With wrapped product names:', wrappedProductNames);
-            await this.addWrappingProduct(quantity, wrappedProductNames);
-          }
+          await this.addWrappingProduct(quantity, wrappedProductNames);
         }
-        
-        // Refresh cart UI after a longer delay to ensure cart is updated
-        console.log('\n⏳ Waiting 500ms before refreshing cart UI...');
-        setTimeout(() => this.refreshCartUI(), 500);
-        console.log('=== syncWrappingToCart COMPLETED ===\n');
-      } catch (error) {
-        console.error('❌ Gift wrapping sync error:', error);
+
+        setTimeout(() => this.refreshCartUI(), 150);
+      } catch (_) {
         this.isUpdating = false;
       }
     }
@@ -843,19 +493,12 @@ document.addEventListener("DOMContentLoaded", function () {
      */
     getWrappedProductNames() {
       const checkedBoxes = document.querySelectorAll('.wrapping-checkbox[data-item-key]:checked');
-      console.log('🔎 getWrappedProductNames called - found', checkedBoxes.length, 'checked boxes');
-      
-      const names = Array.from(checkedBoxes).map((cb, idx) => {
-        const parent = cb.closest('.wrapping-item');
-        const titleEl = parent?.querySelector('.wrapping-item-title');
-        const title = titleEl?.textContent?.trim() || 'Unknown Product';
-        console.log(`   [${idx}] "${title}"`);
-        return title;
+      const names = Array.from(checkedBoxes).map((checkbox) => {
+        const parent = checkbox.closest('.wrapping-item');
+        return parent?.querySelector('.wrapping-item-title')?.textContent?.trim() || 'Unknown Product';
       });
-      
-      const result = names.join(', ');
-      console.log('📝 getWrappedProductNames result:', result || '(EMPTY)');
-      return result;
+
+      return names.join(', ');
     }
     
     /**
@@ -865,255 +508,107 @@ document.addEventListener("DOMContentLoaded", function () {
       if (!this.variantId) {
         this.variantId = await this.getWrappingVariantId();
       }
-      
-      try {
-        console.log('📝 Adding wrapping with variant ID:', this.variantId, 'Quantity:', quantity);
-        
-        const properties = {
-          '_gift_wrapping': 'true'
-        };
-        
-        // Add wrapped product names if available
-        if (wrappedProductNames) {
-          properties['wrapped_products'] = wrappedProductNames;
-          console.log('📝 With wrapped products:', wrappedProductNames);
-        }
-        
-        const response = await fetch('/cart/add.js', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest'
-          },
-          body: JSON.stringify({
-            items: [{
-              id: this.variantId,
-              quantity: quantity,
-              properties: properties
-            }]
-          })
-        });
-        
-        const result = await response.json();
-        console.log('✅ Wrapping added successfully');
-        return result;
-      } catch (error) {
-        console.error('❌ Error adding wrapping product:', error);
-        throw error;
+
+      const properties = {
+        '_gift_wrapping': 'true'
+      };
+
+      if (wrappedProductNames) {
+        properties.wrapped_products = wrappedProductNames;
       }
+
+      const response = await fetch('/cart/add.js', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({
+          items: [{
+            id: this.variantId,
+            quantity: quantity,
+            properties: properties
+          }]
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to add wrapping product');
+      }
+
+      return response.json();
     }
     
     /**
      * Update item quantity in cart (and properties if provided)
      */
     async updateCartItem(key, quantity, wrappedProductNames = '') {
-      try {
-        console.log('📝 updateCartItem called. Key:', key, 'Quantity:', quantity);
-        
-        const updateData = {
-          id: key,
-          quantity: quantity
+      const payload = {
+        id: key,
+        quantity: quantity
+      };
+
+      if (wrappedProductNames) {
+        payload.properties = {
+          wrapped_products: wrappedProductNames
         };
-        
-        // Try to update properties if provided
-        if (wrappedProductNames) {
-          updateData.properties = {
-            'wrapped_products': wrappedProductNames
-          };
-          console.log('📝 With wrapped products:', wrappedProductNames);
-        }
-        
-        console.log('📤 Sending to /cart/change.js:', JSON.stringify(updateData));
-        
-        const response = await fetch('/cart/change.js', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Requested-With': 'XMLHttpRequest'
-          },
-          body: JSON.stringify(updateData)
-        });
-        
-        console.log('📬 Response status:', response.status, response.statusText);
-        
-        if (!response.ok) {
-          console.error('❌ API returned status:', response.status);
-          throw new Error(`HTTP ${response.status}`);
-        }
-        
-        const result = await response.json();
-        console.log('📦 Response items count:', result.items.length);
-        
-        // Log the resulting cart
-        if (quantity === 0) {
-          console.log('✅ Removal request sent. Cart now has', result.items.length, 'items');
-          result.items.forEach(item => {
-            console.log(`   - ${item.handle} (qty: ${item.quantity})`);
-          });
-        }
-        
-        return result;
-      } catch (error) {
-        console.error('❌ Error in updateCartItem:', error.message);
-        throw error;
       }
+
+      const response = await fetch('/cart/change.js', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      return response.json();
     }
     
     /**
      * Fetch wrapping product variant ID
      */
     async getWrappingVariantId() {
-      try {
-        console.log('🔍 Fetching wrapping product:', this.wrappingHandle);
-        
-        const response = await fetch(`/products/${this.wrappingHandle}.js`);
-        if (!response.ok) {
-          throw new Error(`Product not found: ${this.wrappingHandle} (HTTP ${response.status})`);
-        }
-        
-        const product = await response.json();
-        console.log('📦 Product fetched:', product.title);
-        
-        if (!product.variants || product.variants.length === 0) {
-          throw new Error(`No variants found for ${this.wrappingHandle}`);
-        }
-        
-        console.log('✅ Variant ID found:', product.variants[0].id);
-        return product.variants[0].id;
-      } catch (error) {
-        console.error('❌ Error fetching wrapping variant:', error);
-        throw error;
+      const response = await fetch(`/products/${this.wrappingHandle}.js`);
+      if (!response.ok) {
+        throw new Error(`Product not found: ${this.wrappingHandle} (HTTP ${response.status})`);
       }
+
+      const product = await response.json();
+      if (!product.variants || product.variants.length === 0) {
+        throw new Error(`No variants found for ${this.wrappingHandle}`);
+      }
+
+      return product.variants[0].id;
     }
     
     /**
      * Refresh cart display
      */
     refreshCartUI() {
-      console.log('🔄 Attempting to refresh cart...');
-      
-      // Method 1: Use theme.cart.buildCart if available
+      if (this.reloadTimeout) {
+        clearTimeout(this.reloadTimeout);
+      }
+
       if (typeof theme !== 'undefined' && theme.cart && typeof theme.cart.buildCart === 'function') {
-        console.log('✅ Method 1: Using theme.cart.buildCart()');
         try {
           theme.cart.buildCart();
-          console.log('✅ Method 1 succeeded');
           return;
-        } catch (e) {
-          console.warn('⚠️  Method 1 failed:', e.message);
-        }
-      } else {
-        console.log('❌ Method 1: theme.cart not available');
+        } catch (_) {}
       }
-      
-      // Method 2: Try cart:update event
-      console.log('📢 Method 2: Dispatching cart:update event');
+
       try {
         document.dispatchEvent(new CustomEvent('cart:update'));
-        console.log('✅ Method 2: Event dispatched');
-      } catch (e) {
-        console.warn('⚠️  Method 2 failed:', e.message);
-      }
-      
-      // Method 3: Aggressive DOM update with multiple selectors
-      console.log('🔗 Method 3: Fetching and updating cart DOM...');
-      this.updateCartDOMDirectly();
-      
-      // Method 4: Fallback reload after delay
-      console.log('⏰ Method 4: Setting reload timeout...');
-      this.reloadTimeout = setTimeout(() => {
-        console.log('⚠️  Method 4: Page reload fallback triggered');
-        window.location.reload();
-      }, 3000);
-    }
+      } catch (_) {}
 
-    updateCartDOMDirectly() {
-      // Try to update cart sections directly via AJAX
-      const sections = ['cart-drawer', 'cart-items', 'cart-page'];
-      
-      Promise.all(sections.map(section => 
-        fetch(`/cart?section_id=${section}`)
-          .then(r => r.text())
-          .catch(e => {
-            console.warn(`⚠️  Could not fetch section ${section}:`, e.message);
-            return null;
-          })
-      )).then(([drawerHtml, itemsHtml, pageHtml]) => {
-        let updated = false;
-        
-        // Try to update cart drawer
-        if (drawerHtml) {
-          const drawer = document.getElementById('cart-drawer');
-          if (drawer) {
-            try {
-              const parser = new DOMParser();
-              const newDOM = parser.parseFromString(drawerHtml, 'text/html');
-              const newDrawer = newDOM.getElementById('cart-drawer');
-              if (newDrawer) {
-                drawer.innerHTML = newDrawer.innerHTML;
-                console.log('✅ Method 3a: Cart drawer updated');
-                updated = true;
-                // Restore checkbox states after DOM update
-                setTimeout(() => {
-                  this.syncCheckboxStateFromStorage();
-                  this.attachCheckboxListeners();
-                }, 50);
-              }
-            } catch (e) {
-              console.warn('⚠️  Method 3a failed:', e.message);
-            }
-          }
-        }
-        
-        // Try to update cart items container
-        if (itemsHtml) {
-          const items = document.getElementById('cart-items');
-          if (items) {
-            try {
-              const parser = new DOMParser();
-              const newDOM = parser.parseFromString(itemsHtml, 'text/html');
-              const newItems = newDOM.getElementById('cart-items');
-              if (newItems) {
-                items.innerHTML = newItems.innerHTML;
-                console.log('✅ Method 3b: Cart items updated');
-                updated = true;
-                // Restore checkbox states after DOM update
-                setTimeout(() => {
-                  this.syncCheckboxStateFromStorage();
-                  this.attachCheckboxListeners();
-                }, 50);
-              }
-            } catch (e) {
-              console.warn('⚠️  Method 3b failed:', e.message);
-            }
-          }
-        }
-        
-        // Try to update cart subtotal and totals
-        fetch('/cart.js').then(r => r.json()).then(cart => {
-          // Update item count elements
-          document.querySelectorAll('[data-cart-count]').forEach(el => {
-            el.setAttribute('data-cart-count', cart.item_count);
-            el.textContent = cart.item_count;
-            console.log('✅ Method 3c: Updated cart count to', cart.item_count);
-            updated = true;
-          });
-          
-          // Update subtotal elements
-          document.querySelectorAll('[data-cart-subtotal]').forEach(el => {
-            el.setAttribute('data-cart-subtotal', cart.total_price);
-            el.textContent = (cart.total_price / 100).toFixed(2);
-            console.log('✅ Method 3d: Updated cart subtotal');
-            updated = true;
-          });
-        });
-        
-        if (updated) {
-          console.log('✅ Method 3: At least one cart element was updated');
-        } else {
-          console.warn('⚠️  Method 3: No cart elements found to update');
-        }
-      });
+      this.reloadTimeout = setTimeout(() => {
+        window.location.reload();
+      }, 2500);
     }
   }
   
@@ -1127,27 +622,11 @@ document.addEventListener("DOMContentLoaded", function () {
     const container = document.querySelector('[data-wrapping-container]');
     
     if (container) {
-      console.log('✅ 🎁 Wrapping container FOUND! Initializing gift wrapping...');
-      
       if (!window.giftWrappingManager) {
         window.giftWrappingManager = new GiftWrappingManager();
       }
       
       await window.giftWrappingManager.init();
-    } else {
-      console.log('❌ Wrapping container NOT FOUND in DOM');
-      
-      // Check if the snippet is enabled
-      const settingEnabled = {{ settings.cart_wrapping_enable | json }};
-      console.log('📋 Gift wrapping enabled in settings:', settingEnabled);
-      
-      // Check if there are cart items
-      const cartItems = document.querySelectorAll('[data-products] [data-cart-item]');
-      console.log('📦 Cart items found:', cartItems.length);
-      
-      if (settingEnabled && cartItems.length === 0) {
-        console.log('ℹ️  Cart is empty - wrapping section should appear once items are added');
-      }
     }
   }
   
@@ -1156,12 +635,9 @@ document.addEventListener("DOMContentLoaded", function () {
    * This handles cases where cart is loaded dynamically
    */
   function watchForWrappingContainer() {
-    console.log('👀 Setting up DOM watcher for wrapping container...');
-    
     const observer = new MutationObserver((mutations) => {
       const container = document.querySelector('[data-wrapping-container]');
       if (container) {
-        console.log('✅ 👀 Wrapping container detected in DOM via MutationObserver!');
         observer.disconnect();
         initGiftWrapping();
       }
@@ -1176,58 +652,39 @@ document.addEventListener("DOMContentLoaded", function () {
   
   // Initialize on page load
   if (document.readyState === 'loading') {
-    console.log('📄 Page loading... waiting for DOMContentLoaded');
     document.addEventListener('DOMContentLoaded', () => {
-      console.log('📄 DOMContentLoaded fired');
       initGiftWrapping();
       watchForWrappingContainer();
     });
   } else {
-    console.log('📄 Page already loaded, initializing now');
     initGiftWrapping();
     watchForWrappingContainer();
   }
   
   // Reinitialize after cart updates
-  document.addEventListener('cart:updated', () => {
-    console.log('📢 cart:updated event fired, reinitializing gift wrapping...');
-    setTimeout(initGiftWrapping, 200);
-  });
+  document.addEventListener('cart:updated', () => setTimeout(initGiftWrapping, 120));
   
   // Hook into theme cart system
   if (typeof theme !== 'undefined') {
-    console.log('✅ Theme object found, hooking into cart system');
-    
     const hookCartBuild = () => {
       if (theme.cart && theme.cart.reInit) {
         const originalReInit = theme.cart.reInit;
         theme.cart.reInit = function() {
-          console.log('🔄 theme.cart.reInit called, reinitializing gift wrapping');
           originalReInit.call(this);
-          setTimeout(initGiftWrapping, 100);
+          setTimeout(initGiftWrapping, 80);
         };
-        console.log('✅ Successfully hooked theme.cart.reInit');
-      } else {
-        console.log('⚠️  Could not find theme.cart.reInit to hook into');
       }
     };
     
     hookCartBuild();
   } else {
-    console.log('⚠️  Theme object not found, will retry after delay');
-    
     setTimeout(() => {
       if (typeof theme !== 'undefined' && theme.cart && theme.cart.reInit) {
-        console.log('✅ Theme loaded, hooking into cart system');
-        
         const originalReInit = theme.cart.reInit;
         theme.cart.reInit = function() {
-          console.log('🔄 theme.cart.reInit called');
           originalReInit.call(this);
-          setTimeout(initGiftWrapping, 100);
+          setTimeout(initGiftWrapping, 80);
         };
-      } else {
-        console.log('❌ Could not find theme object after retry');
       }
     }, 1500);
   }
