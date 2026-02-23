@@ -356,9 +356,9 @@ document.addEventListener("DOMContentLoaded", function () {
           }
         }
         
-        // Refresh cart UI after a short delay to ensure cart is updated
-        console.log('🔄 Refreshing cart UI...');
-        setTimeout(() => this.refreshCartUI(), 300);
+        // Refresh cart UI after a longer delay to ensure cart is updated
+        console.log('⏳ Waiting 500ms before refreshing cart UI...');
+        setTimeout(() => this.refreshCartUI(), 500);
       } catch (error) {
         console.error('❌ Gift wrapping sync error:', error);
         this.isUpdating = false;
@@ -463,17 +463,85 @@ document.addEventListener("DOMContentLoaded", function () {
     refreshCartUI() {
       console.log('🔄 Attempting to refresh cart...');
       
-      // Use theme.cart.buildCart if available
+      // Method 1: Use theme.cart.buildCart if available
       if (typeof theme !== 'undefined' && theme.cart && typeof theme.cart.buildCart === 'function') {
         console.log('✅ Using theme.cart.buildCart()');
-        theme.cart.buildCart();
-      } else if (window.location.pathname === '/cart') {
-        // On full cart page, reload if normal refresh fails
-        console.log('⚠️  Reloading cart page');
-        window.location.reload();
-      } else {
-        console.log('ℹ️  Cart refresh not available on this page');
+        try {
+          theme.cart.buildCart();
+          return;
+        } catch (e) {
+          console.warn('⚠️  theme.cart.buildCart error:', e.message);
+        }
       }
+      
+      // Method 2: Try to trigger cart update event
+      if (typeof theme !== 'undefined' && window.Shopify && window.Shopify.theme) {
+        console.log('📢 Dispatching cart:update event');
+        try {
+          document.dispatchEvent(new CustomEvent('cart:update'));
+          return;
+        } catch (e) {
+          console.warn('⚠️  cart:update error:', e.message);
+        }
+      }
+      
+      // Method 3: Fetch cart AJAX and update DOM elements directly
+      console.log('🔗 Fetching cart AJAX endpoint and updating DOM...');
+      Promise.all([
+        fetch('/cart?section_id=cart-drawer').then(r => r.text()),
+        fetch('/cart?section_id=cart-items').then(r => r.text())
+      ]).then(([drawerHtml, itemsHtml]) => {
+        console.log('✅ Cart sections fetched');
+        
+        // Update cart drawer if exists
+        const cartDrawer = document.getElementById('cart-drawer');
+        if (cartDrawer && drawerHtml) {
+          const parser = new DOMParser();
+          const newDOM = parser.parseFromString(drawerHtml, 'text/html');
+          const newDrawer = newDOM.getElementById('cart-drawer');
+          if (newDrawer) {
+            cartDrawer.innerHTML = newDrawer.innerHTML;
+            console.log('✅ Cart drawer DOM updated');
+          }
+        }
+        
+        // Update cart items if exists
+        const itemsContainer = document.getElementById('cart-items');
+        if (itemsContainer && itemsHtml) {
+          const parser = new DOMParser();
+          const newDOM = parser.parseFromString(itemsHtml, 'text/html');
+          const newItems = newDOM.getElementById('cart-items');
+          if (newItems) {
+            itemsContainer.innerHTML = newItems.innerHTML;
+            console.log('✅ Cart items DOM updated');
+          }
+        }
+        
+        // Update cart count if exists
+        const cartCount = document.querySelector('[data-cart-count]');
+        if (cartCount) {
+          fetch('/cart.js').then(r => r.json()).then(cart => {
+            const itemCount = cart.item_count || 0;
+            cartCount.setAttribute('data-cart-count', itemCount);
+            cartCount.textContent = itemCount;
+            console.log('✅ Cart count updated to:', itemCount);
+          });
+        }
+      }).catch(e => {
+        console.warn('⚠️  Cart AJAX fetch error:', e.message);
+        // Fall back to Method 4
+        this.methodFourReload();
+      });
+      
+      // Method 4: Try location reload as last resort (after timeout)
+      this.reloadTimeout = setTimeout(() => {
+        this.methodFourReload();
+      }, 2000);
+    }
+
+    methodFourReload() {
+      console.log('⚠️  Attempting page reload after timeout...');
+      window.location.reload();
     }
   }
   
