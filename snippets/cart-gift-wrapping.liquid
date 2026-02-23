@@ -111,27 +111,25 @@
       <div class="wrapping-header">🎁 {{ settings.cart_wrapping_text | default: 'Add special gift wrapping' }}</div>
       
       {% for item in wrappable_items %}
-        {% unless item.product.handle == wrapping_handle %}
-          <div class="wrapping-option" data-wrapping-item="{{ item.key }}">
-            <input 
-              type="checkbox" 
-              class="wrapping-checkbox" 
-              id="wrap-{{ item.key }}" 
-              data-item-key="{{ item.key }}"
-              data-item-quantity="{{ item.quantity }}"
-              {% if wrapping_in_cart %}checked{% endif %}
-            >
-            <label for="wrap-{{ item.key }}" class="wrapping-label">
-              Wrap this item
-            </label>
-          </div>
-          <div class="wrapping-item-details">
-            {% if item.image %}
-              <img src="{{ item.image | img_url: '80x80' }}" alt="{{ item.title }}" class="wrapping-item-image">
-            {% endif %}
-            <span>{{ item.product.title }} {% if item.quantity > 1 %}({{ item.quantity }}x){% endif %}</span>
-          </div>
-        {% endunless %}
+        <div class="wrapping-option" data-wrapping-item="{{ item.key }}">
+          <input 
+            type="checkbox" 
+            class="wrapping-checkbox" 
+            id="wrap-{{ item.key }}" 
+            data-item-key="{{ item.key }}"
+            data-item-quantity="{{ item.quantity }}"
+            {% if wrapping_in_cart %}checked{% endif %}
+          >
+          <label for="wrap-{{ item.key }}" class="wrapping-label">
+            Wrap this item
+          </label>
+        </div>
+        <div class="wrapping-item-details">
+          {% if item.image %}
+            <img src="{{ item.image | img_url: '80x80' }}" alt="{{ item.title }}" class="wrapping-item-image">
+          {% endif %}
+          <span>{{ item.product.title }} {% if item.quantity > 1 %}({{ item.quantity }}x){% endif %}</span>
+        </div>
       {% endfor %}
       
     {% else %}
@@ -166,6 +164,7 @@
           this.wrappingHandle = wrappingHandle;
           this.perItemMode = perItemMode;
           this.isUpdating = false;
+          this.observerInitialized = false;
           this.init();
         }
         
@@ -175,6 +174,9 @@
           } else {
             this.initBulkMode();
           }
+          
+          // Monitor cart changes to auto-update wrapping
+          this.watchCartChanges();
         }
         
         initPerItemMode() {
@@ -188,6 +190,100 @@
           const masterCheckbox = document.querySelector('[data-wrapping-master]');
           if (masterCheckbox) {
             masterCheckbox.addEventListener('change', (e) => this.handleBulkChange(e));
+          }
+        }
+        
+        watchCartChanges() {
+          // Watch for cart updates via events
+          document.addEventListener('cart:updated', () => this.handleCartUpdate());
+          
+          // Watch for quantity changes in DOM
+          const cartContainer = document.querySelector('[data-products]');
+          if (cartContainer && !this.observerInitialized) {
+            const observer = new MutationObserver(() => {
+              this.handleCartUpdate();
+            });
+            
+            observer.observe(cartContainer, {
+              childList: true,
+              subtree: true
+            });
+            
+            this.observerInitialized = true;
+          }
+          
+          // Watch for Ajax cart updates
+          if (typeof theme !== 'undefined' && theme.cart) {
+            const originalBuild = theme.cart.buildCart;
+            if (originalBuild) {
+              theme.cart.buildCart = (...args) => {
+                originalBuild.apply(theme.cart, args);
+                setTimeout(() => this.handleCartUpdate(), 100);
+              };
+            }
+          }
+          
+          // Periodic check for cart changes (fallback)
+          setInterval(() => this.checkAndUpdateWrapping(), 3000);
+        }
+        
+        async handleCartUpdate() {
+          if (this.isUpdating) return;
+          
+          const masterCheckbox = document.querySelector('[data-wrapping-master]');
+          if (masterCheckbox && masterCheckbox.checked) {
+            await this.checkAndUpdateWrapping();
+          }
+        }
+        
+        async checkAndUpdateWrapping() {
+          if (this.isUpdating) return;
+          
+          try {
+            const cartResponse = await fetch('/cart.js');
+            const cart = await cartResponse.json();
+            
+            const wrappingItem = cart.items.find(item => 
+              item.product_handle === this.wrappingHandle
+            );
+            
+            const wrappableItems = cart.items.filter(item => 
+              item.product_handle !== this.wrappingHandle
+            );
+            
+            const totalItems = wrappableItems.length;
+            
+            // Update count display
+            const countSpan = document.querySelector('[data-wrapping-count]');
+            if (countSpan) {
+              countSpan.textContent = totalItems;
+            }
+            
+            // Update master checkbox data
+            const masterCheckbox = document.querySelector('[data-wrapping-master]');
+            if (masterCheckbox) {
+              masterCheckbox.dataset.totalItems = totalItems;
+              
+              // If checked and quantity doesn't match, update it
+              if (masterCheckbox.checked && wrappingItem) {
+                if (totalItems === 0) {
+                  // No items left, uncheck and remove wrapping
+                  masterCheckbox.checked = false;
+                  await this.updateWrappingQuantity(0);
+                } else if (wrappingItem.quantity !== totalItems) {
+                  // Quantity mismatch, update it
+                  await this.updateWrappingQuantity(totalItems);
+                }
+              } else if (masterCheckbox.checked && !wrappingItem && totalItems > 0) {
+                // Checkbox is checked but wrapping not in cart, add it
+                await this.updateWrappingQuantity(totalItems);
+              } else if (!masterCheckbox.checked && wrappingItem) {
+                // Checkbox unchecked but wrapping still in cart, remove it
+                await this.updateWrappingQuantity(0);
+              }
+            }
+          } catch (error) {
+            console.error('Error checking cart:', error);
           }
         }
         
@@ -300,6 +396,9 @@
           if (typeof theme !== 'undefined' && theme.cart) {
             document.dispatchEvent(new CustomEvent('cart:refresh'));
           }
+          
+          // Dispatch custom event for other listeners
+          document.dispatchEvent(new CustomEvent('cart:updated'));
           
           // Fallback: reload page if cart refresh not available
           if (window.location.pathname === '/cart') {
