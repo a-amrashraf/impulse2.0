@@ -951,13 +951,6 @@
         "id": "cart_wrapping_text_color",
         "label": "Wrapping text color",
         "default": "#000000"
-      },
-      {
-        "type": "checkbox",
-        "id": "cart_wrapping_per_item",
-        "label": "Enable per-item wrapping",
-        "info": "Allow customers to select which items to wrap individually",
-        "default": false
       }
     ]
   },

@@ -197,150 +197,105 @@ document.addEventListener("DOMContentLoaded", function () {
   'use strict';
   
   const wrappingHandle = {{ settings.cart_wrapping_product_handle | default: 'special-wrapping' | json }};
-  const perItemMode = {{ settings.cart_wrapping_per_item | json }};
   
   class GiftWrappingManager {
     constructor() {
       this.wrappingHandle = wrappingHandle;
-      this.perItemMode = perItemMode;
       this.isUpdating = false;
-      this.initialized = false;
-      this.cartState = {}; // Binary tracking: itemKey -> isInCart (1/0)
-      this.checkedState = {}; // Track which items should be wrapped
+      this.cartItemState = {}; // Track which items are in cart
+      this.activeWrapItems = {}; // Track which items have wrapping checked
     }
     
     init() {
-      if (this.initialized) {
-        this.detachEvents();
-      }
-      
-      // Update cart state tracking
-      this.updateCartState();
-      
-      if (this.perItemMode) {
-        this.initPerItemMode();
-      } else {
-        this.initBulkMode();
-      }
-      
-      this.initialized = true;
+      this.collectCheckboxState();
+      this.attachCheckboxListeners();
     }
     
-    updateCartState() {
-      // Build binary state map of current cart items
-      const newState = {};
-      const allItems = document.querySelectorAll('.wrapping-checkbox[data-item-key]');
+    /**
+     * Collect current state of all checkboxes
+     * Preserve checked states across cart updates
+     */
+    collectCheckboxState() {
+      const checkboxes = document.querySelectorAll('.wrapping-checkbox[data-item-key]');
+      const newCartState = {};
       
-      allItems.forEach(checkbox => {
+      checkboxes.forEach(checkbox => {
         const key = checkbox.dataset.itemKey;
-        newState[key] = 1; // Item exists in cart
+        newCartState[key] = true; // Item exists
         
-        // Preserve checked state if item existed before
-        if (this.cartState[key] === 1 && this.checkedState[key]) {
+        // Preserve checked state from previous session
+        if (this.activeWrapItems[key]) {
           checkbox.checked = true;
-          this.checkedState[key] = true;
-        } else if (!this.checkedState[key]) {
-          this.checkedState[key] = checkbox.checked;
         }
       });
       
-      // Detect removed items (was 1, now 0)
-      const removedItems = Object.keys(this.cartState).filter(key => 
-        this.cartState[key] === 1 && !newState[key]
+      // Detect removed items
+      const removedItems = Object.keys(this.cartItemState).filter(
+        key => !newCartState[key]
       );
       
-      // Clean up checked state for removed items
+      // Cleanup state for removed items
       removedItems.forEach(key => {
-        delete this.checkedState[key];
+        delete this.activeWrapItems[key];
       });
       
-      this.cartState = newState;
+      this.cartItemState = newCartState;
       
-      // Auto-update wrapping if items were removed and we're in bulk mode or per-item with changes
+      // Auto-update wrapping if items were removed
       if (removedItems.length > 0) {
-        setTimeout(() => this.autoUpdateWrapping(), 100);
+        setTimeout(() => this.updateWrappingFromChecked(), 100);
       }
     }
     
-    async autoUpdateWrapping() {
-      if (this.isUpdating) return;
+    /**
+     * Attach change listeners to all checkboxes
+     */
+    attachCheckboxListeners() {
+      const checkboxes = document.querySelectorAll('.wrapping-checkbox[data-item-key]');
       
-      if (this.perItemMode) {
-        // In per-item mode, recalculate based on checked boxes
-        const checkedBoxes = document.querySelectorAll('.wrapping-checkbox[data-item-key]:checked');
-        const totalToWrap = Array.from(checkedBoxes).reduce((sum, cb) => {
-          return sum + parseInt(cb.dataset.itemQuantity || 1);
-        }, 0);
-        await this.updateWrappingQuantity(totalToWrap);
-      } else {
-        // In bulk mode, update count if master is checked
-        const masterCheckbox = document.querySelector('[data-wrapping-master]');
-        if (masterCheckbox && masterCheckbox.checked) {
-          const allItems = document.querySelectorAll('[data-wrapping-item]');
-          const totalItems = allItems.length;
-          masterCheckbox.dataset.totalItems = totalItems;
-          
-          const countSpan = document.querySelector('[data-wrapping-count]');
-          if (countSpan) {
-            countSpan.textContent = totalItems;
+      checkboxes.forEach(checkbox => {
+        // Remove previous listeners
+        const newCheckbox = checkbox.cloneNode(true);
+        checkbox.parentNode.replaceChild(newCheckbox, checkbox);
+        
+        // Attach new listener
+        newCheckbox.addEventListener('change', (e) => {
+          const key = e.target.dataset.itemKey;
+          if (e.target.checked) {
+            this.activeWrapItems[key] = true;
+          } else {
+            delete this.activeWrapItems[key];
           }
           
-          await this.updateWrappingQuantity(totalItems);
-        }
-      }
-    }
-    
-    detachEvents() {
-      const oldCheckboxes = document.querySelectorAll('.wrapping-checkbox');
-      oldCheckboxes.forEach(cb => {
-        const newCb = cb.cloneNode(true);
-        cb.parentNode.replaceChild(newCb, cb);
+          this.updateWrappingFromChecked();
+        });
       });
     }
     
-    initPerItemMode() {
-      const checkboxes = document.querySelectorAll('.wrapping-checkbox[data-item-key]');
-      checkboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', (e) => this.handlePerItemChange(e));
-      });
-    }
-    
-    initBulkMode() {
-      const masterCheckbox = document.querySelector('[data-wrapping-master]');
-      if (masterCheckbox) {
-        masterCheckbox.addEventListener('change', (e) => this.handleBulkChange(e));
-      }
-    }
-    
-    async handlePerItemChange(event) {
+    /**
+     * Calculate total quantity to wrap based on checked items
+     * and update cart accordingly
+     */
+    async updateWrappingFromChecked() {
       if (this.isUpdating) return;
       
-      const checkbox = event.target;
-      const key = checkbox.dataset.itemKey;
-      this.checkedState[key] = checkbox.checked;
-      
+      // Calculate total quantity from checked items
       const checkedBoxes = document.querySelectorAll('.wrapping-checkbox[data-item-key]:checked');
       const totalToWrap = Array.from(checkedBoxes).reduce((sum, cb) => {
         return sum + parseInt(cb.dataset.itemQuantity || 1);
       }, 0);
       
-      await this.updateWrappingQuantity(totalToWrap);
+      await this.syncWrappingToCart(totalToWrap);
     }
     
-    async handleBulkChange(event) {
-      if (this.isUpdating) return;
-      
-      const checkbox = event.target;
-      const totalItems = parseInt(checkbox.dataset.totalItems || 0);
-      const quantity = checkbox.checked ? totalItems : 0;
-      
-      await this.updateWrappingQuantity(quantity);
-    }
-    
-    async updateWrappingQuantity(quantity) {
+    /**
+     * Add/update/remove wrapping product in cart
+     */
+    async syncWrappingToCart(quantity) {
       this.isUpdating = true;
       
       try {
+        // Get current cart state
         const cartResponse = await fetch('/cart.js');
         const cart = await cartResponse.json();
         
@@ -349,88 +304,114 @@ document.addEventListener("DOMContentLoaded", function () {
         );
         
         if (quantity > 0) {
+          // Need wrapping in cart
           if (wrappingItem) {
+            // Update quantity if different
             if (wrappingItem.quantity !== quantity) {
-              await this.changeItemQuantity(wrappingItem.key, quantity);
+              await this.updateCartItem(wrappingItem.key, quantity);
             }
           } else {
+            // Add wrapping product
             await this.addWrappingProduct(quantity);
           }
         } else {
+          // Remove wrapping if in cart
           if (wrappingItem) {
-            await this.changeItemQuantity(wrappingItem.key, 0);
+            await this.updateCartItem(wrappingItem.key, 0);
           }
         }
         
-        await this.refreshCart();
+        // Refresh cart UI
+        await this.refreshCartUI();
       } catch (error) {
-        console.error('Error updating wrapping:', error);
+        console.error('Gift wrapping error:', error);
       } finally {
         this.isUpdating = false;
       }
     }
     
+    /**
+     * Add wrapping product to cart
+     */
     async addWrappingProduct(quantity) {
-      const variantId = await this.getWrappingVariantId();
-      const formData = {
-        items: [{
-          id: variantId,
-          quantity: quantity,
-          properties: {
-            '_gift_wrapping': 'true'
-          }
-        }]
-      };
-      
-      const response = await fetch('/cart/add.js', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData)
-      });
-      
-      return response.json();
+      try {
+        const variantId = await this.getWrappingVariantId();
+        
+        const response = await fetch('/cart/add.js', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            items: [{
+              id: variantId,
+              quantity: quantity,
+              properties: {
+                '_gift_wrapping': 'true'
+              }
+            }]
+          })
+        });
+        
+        return response.json();
+      } catch (error) {
+        console.error('Error adding wrapping:', error);
+      }
     }
     
-    async changeItemQuantity(key, quantity) {
-      const response = await fetch('/cart/change.js', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          id: key,
-          quantity: quantity
-        })
-      });
-      
-      return response.json();
+    /**
+     * Update quantity of item in cart
+     */
+    async updateCartItem(key, quantity) {
+      try {
+        const response = await fetch('/cart/change.js', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            id: key,
+            quantity: quantity
+          })
+        });
+        
+        return response.json();
+      } catch (error) {
+        console.error('Error updating cart:', error);
+      }
     }
     
+    /**
+     * Fetch wrapping product variant ID
+     */
     async getWrappingVariantId() {
-      const response = await fetch(`/products/${this.wrappingHandle}.js`);
-      const product = await response.json();
-      return product.variants[0].id;
+      try {
+        const response = await fetch(`/products/${this.wrappingHandle}.js`);
+        const product = await response.json();
+        return product.variants[0].id;
+      } catch (error) {
+        console.error('Error fetching wrapping product:', error);
+      }
     }
     
-    async refreshCart() {
-      if (typeof theme !== 'undefined' && theme.cart) {
+    /**
+     * Refresh cart display
+     */
+    async refreshCartUI() {
+      if (typeof theme !== 'undefined' && theme.cart && theme.cart.buildCart) {
         theme.cart.buildCart();
-      } else {
-        if (window.location.pathname === '/cart') {
-          window.location.reload();
-        }
+      } else if (window.location.pathname === '/cart') {
+        window.location.reload();
       }
     }
   }
   
-  // Create global instance
+  // Global instance
   window.giftWrappingManager = null;
   
   function initGiftWrapping() {
-    const wrappingContainer = document.querySelector('[data-wrapping-container]');
-    if (wrappingContainer) {
+    const container = document.querySelector('[data-wrapping-container]');
+    if (container) {
       if (!window.giftWrappingManager) {
         window.giftWrappingManager = new GiftWrappingManager();
       }
@@ -445,27 +426,30 @@ document.addEventListener("DOMContentLoaded", function () {
     initGiftWrapping();
   }
   
-  // Reinitialize after cart updates (for cart drawer)
-  document.addEventListener('cart:updated', function() {
+  // Reinitialize after cart updates
+  document.addEventListener('cart:updated', () => {
     setTimeout(initGiftWrapping, 100);
   });
   
-  // Hook into theme cart buildCart if available
-  function hookCartBuild() {
-    if (typeof theme !== 'undefined' && theme.cart && theme.cart.reInit) {
+  // Hook into theme cart system
+  if (typeof theme !== 'undefined') {
+    if (theme.cart && theme.cart.reInit) {
       const originalReInit = theme.cart.reInit;
       theme.cart.reInit = function() {
         originalReInit.call(this);
         setTimeout(initGiftWrapping, 50);
       };
     }
-  }
-  
-  // Try to hook immediately or after theme loads
-  if (typeof theme !== 'undefined') {
-    hookCartBuild();
   } else {
-    setTimeout(hookCartBuild, 500);
+    setTimeout(() => {
+      if (theme.cart && theme.cart.reInit) {
+        const originalReInit = theme.cart.reInit;
+        theme.cart.reInit = function() {
+          originalReInit.call(this);
+          setTimeout(initGiftWrapping, 50);
+        };
+      }
+    }, 1000);
   }
 })();
 </script>

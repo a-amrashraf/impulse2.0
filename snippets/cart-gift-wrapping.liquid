@@ -1,24 +1,13 @@
 {% comment %}
-  Gift Wrapping Feature
-  - Dynamically adds/removes wrapping based on checked items
-  - Supports both per-item and bulk wrapping
+  Gift Wrapping Feature - Per-Item Only
+  - Adds a checkbox for each product to enable individual item wrapping
+  - Dynamically updates wrapping quantity based on checked items
 {% endcomment %}
 
 {% if settings.cart_wrapping_enable %}
   {% assign wrapping_handle = settings.cart_wrapping_product_handle | default: 'special-wrapping' %}
-  {% assign wrapping_in_cart = false %}
-  {% assign wrapping_item = null %}
-  {% assign wrapping_qty = 0 %}
   {% assign wrappable_items = cart.items | where_exp: "item", "item.product.handle != wrapping_handle" %}
   
-  {% for item in cart.items %}
-    {% if item.product.handle == wrapping_handle %}
-      {% assign wrapping_in_cart = true %}
-      {% assign wrapping_item = item %}
-      {% assign wrapping_qty = item.quantity %}
-    {% endif %}
-  {% endfor %}
-
   <div class="cart-gift-wrapping" data-wrapping-container>
     <style>
       .cart-gift-wrapping {
@@ -31,7 +20,7 @@
       
       .wrapping-header {
         font-weight: 600;
-        margin-bottom: 10px;
+        margin-bottom: 15px;
         font-size: {{ settings.cart_wrapping_font_size | default: 14 }}px;
         color: {{ settings.cart_wrapping_text_color | default: '#000000' }};
         {% if settings.cart_wrapping_font == 'header' %}
@@ -43,31 +32,40 @@
         {% endif %}
       }
       
-      .wrapping-option {
+      .wrapping-item {
         display: flex;
-        align-items: center;
-        margin: 8px 0;
-        padding: 8px;
-        border-radius: 3px;
-        transition: background-color 0.2s;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 12px;
+        margin-bottom: 12px;
+        border-radius: 4px;
+        border: 1px solid var(--colorBorder);
+        background-color: #fafafa;
       }
       
-      .wrapping-option:hover {
-        background-color: var(--colorBodyLightDim);
+      .wrapping-item:hover {
+        background-color: #f5f5f5;
       }
       
       .wrapping-checkbox {
         width: 18px;
         height: 18px;
-        margin-right: 10px;
+        margin-top: 2px;
         cursor: pointer;
+        flex-shrink: 0;
       }
       
-      .wrapping-label {
+      .wrapping-item-content {
         flex: 1;
+      }
+      
+      .wrapping-item-label {
         cursor: pointer;
         font-size: {{ settings.cart_wrapping_font_size | default: 14 }}px;
         color: {{ settings.cart_wrapping_text_color | default: '#000000' }};
+        font-weight: 500;
+        display: block;
+        margin-bottom: 4px;
         {% if settings.cart_wrapping_font == 'header' %}
           font-family: var(--typeHeaderPrimary), var(--typeHeaderFallback);
         {% elsif settings.cart_wrapping_font == 'poppins' %}
@@ -77,83 +75,47 @@
         {% endif %}
       }
       
-      .wrapping-item-details {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        margin-left: 28px;
+      .wrapping-item-title {
         font-size: 13px;
         color: #666;
       }
       
       .wrapping-item-image {
-        width: 40px;
-        height: 40px;
+        width: 50px;
+        height: 50px;
         object-fit: cover;
         border-radius: 3px;
-      }
-      
-      .wrapping-summary {
-        margin-top: 10px;
-        padding-top: 10px;
-        border-top: 1px solid var(--colorBorder);
-        font-size: 13px;
-        color: #666;
-      }
-      
-      .wrapping-bulk-option {
-        background-color: #f9f9f9;
-        border: 2px solid var(--colorBorder);
-        margin-bottom: 15px;
+        border: 1px solid var(--colorBorder);
       }
     </style>
 
-    {% if settings.cart_wrapping_per_item %}
-      {%- comment -%} Per-item wrapping mode {%- endcomment -%}
-      <div class="wrapping-header">🎁 {{ settings.cart_wrapping_text | default: 'Add special gift wrapping' }}</div>
-      
+    <div class="wrapping-header">🎁 {{ settings.cart_wrapping_text | default: 'Add special gift wrapping' }}</div>
+    
+    {% if wrappable_items.size > 0 %}
       {% for item in wrappable_items %}
-        <div class="wrapping-option" data-wrapping-item="{{ item.key }}">
+        <div class="wrapping-item" data-wrapping-item="{{ item.key }}">
           <input 
             type="checkbox" 
             class="wrapping-checkbox" 
             id="wrap-{{ item.key }}" 
             data-item-key="{{ item.key }}"
             data-item-quantity="{{ item.quantity }}"
-            data-product-handle="{{ item.product.handle }}"
           >
-          <label for="wrap-{{ item.key }}" class="wrapping-label">
-            Wrap this item
-          </label>
-        </div>
-        <div class="wrapping-item-details">
+          <div class="wrapping-item-content">
+            <label for="wrap-{{ item.key }}" class="wrapping-item-label">
+              {{ settings.cart_wrapping_text | default: 'Special wrap' }}
+            </label>
+            <div class="wrapping-item-title">
+              {{ item.product.title }}{% if item.quantity > 1 %} (×{{ item.quantity }}){% endif %}
+            </div>
+          </div>
           {% if item.image %}
-            <img src="{{ item.image | img_url: '80x80' }}" alt="{{ item.title }}" class="wrapping-item-image">
+            <img src="{{ item.image | img_url: '50x50' }}" alt="{{ item.title }}" class="wrapping-item-image">
           {% endif %}
-          <span>{{ item.product.title }} {% if item.quantity > 1 %}({{ item.quantity }}x){% endif %}</span>
         </div>
       {% endfor %}
-      
     {% else %}
-      {%- comment -%} Bulk wrapping mode {%- endcomment -%}
-      <div class="wrapping-option wrapping-bulk-option">
-        <input 
-          type="checkbox" 
-          class="wrapping-checkbox" 
-          id="wrap-all" 
-          data-wrapping-master
-          data-total-items="{{ wrappable_items.size }}"
-          data-wrapping-qty="{{ wrapping_qty }}"
-          {% if wrapping_in_cart and wrapping_qty == wrappable_items.size %}checked{% endif %}
-        >
-        <label for="wrap-all" class="wrapping-label">
-          🎁 {{ settings.cart_wrapping_text | default: 'Add special gift wrapping' }}
-        </label>
-      </div>
-      
-      <div class="wrapping-summary">
-        <span data-wrapping-count>{{ wrappable_items.size }}</span> item(s) will be wrapped
-      </div>
+      <p style="color: #666; font-size: 13px;">No items to wrap</p>
     {% endif %}
   </div>
 {% endif %}
