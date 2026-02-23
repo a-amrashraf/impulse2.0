@@ -205,10 +205,18 @@ document.addEventListener("DOMContentLoaded", function () {
       this.cartItemState = {};
       this.activeWrapItems = {};
       this.variantId = null;
+      this.isInitialized = false; // Prevent duplicate initializations
     }
     
     async init() {
       console.log('🎁 Gift Wrapping Manager init started');
+      
+      // Prevent re-initialization (avoid duplicate wrapping adds)
+      if (this.isInitialized) {
+        console.log('⚠️  Gift Wrapping already initialized, skipping...');
+        return;
+      }
+      this.isInitialized = true;
       
       try {
         // Reset stuck state flags
@@ -396,7 +404,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     
     /**
-     * Sync wrapping quantity to cart
+     * Sync wrapping quantity to cart with product names
      */
     async syncWrappingToCart(quantity) {
       try {
@@ -407,25 +415,37 @@ document.addEventListener("DOMContentLoaded", function () {
         const cart = await cartResponse.json();
         console.log('🛒 Current cart items:', cart.items.length);
         
+        // Find wrapping item in cart
         const wrappingItem = cart.items.find(item => 
           item.product_handle === this.wrappingHandle
         );
         console.log('🎁 Wrapping item in cart:', wrappingItem ? 'Yes' : 'No');
         
+        // Get wrapped product names
+        const wrappedProductNames = this.getWrappedProductNames();
+        console.log('📝 Wrapped product names:', wrappedProductNames);
+        
         // Logic: if quantity > 0, need wrapping; if 0, remove it
         if (quantity > 0) {
           if (wrappingItem) {
-            // Update quantity if different
-            if (wrappingItem.quantity !== quantity) {
+            // IMPORTANT: Check if it's the SAME quantity AND already has the right properties
+            // Only update if quantity changed OR product names changed
+            const currentWrappedNames = wrappingItem.properties?.wrapped_products || '';
+            const namesMatch = currentWrappedNames === wrappedProductNames;
+            const quantityMatch = wrappingItem.quantity === quantity;
+            
+            if (!quantityMatch || !namesMatch) {
               console.log('⬆️  Updating wrapping quantity from', wrappingItem.quantity, 'to', quantity);
-              await this.updateCartItem(wrappingItem.key, quantity);
+              console.log('📝 Updating wrapped product names:', wrappedProductNames);
+              await this.updateCartItem(wrappingItem.key, quantity, wrappedProductNames);
             } else {
-              console.log('✅ Wrapping quantity already correct');
+              console.log('✅ Wrapping already correct - no update needed');
             }
           } else {
-            // Add wrapping product
+            // Add wrapping product for the first time
             console.log('➕ Adding wrapping product with quantity:', quantity);
-            await this.addWrappingProduct(quantity);
+            console.log('📝 With wrapped product names:', wrappedProductNames);
+            await this.addWrappingProduct(quantity, wrappedProductNames);
           }
         } else {
           // Remove wrapping if it's in cart
@@ -445,17 +465,42 @@ document.addEventListener("DOMContentLoaded", function () {
         this.isUpdating = false;
       }
     }
+
+    /**
+     * Get names of all wrapped products
+     */
+    getWrappedProductNames() {
+      const checkedBoxes = document.querySelectorAll('.wrapping-checkbox[data-item-key]:checked');
+      const names = Array.from(checkedBoxes).map(cb => {
+        const parent = cb.closest('.wrapping-item');
+        const titleEl = parent?.querySelector('.wrapping-item-title');
+        return titleEl?.textContent?.trim() || 'Unknown Product';
+      });
+      
+      // Return as comma-separated string
+      return names.join(', ');
+    }
     
     /**
      * Add wrapping product to cart
      */
-    async addWrappingProduct(quantity) {
+    async addWrappingProduct(quantity, wrappedProductNames = '') {
       if (!this.variantId) {
         this.variantId = await this.getWrappingVariantId();
       }
       
       try {
         console.log('📝 Adding wrapping with variant ID:', this.variantId, 'Quantity:', quantity);
+        
+        const properties = {
+          '_gift_wrapping': 'true'
+        };
+        
+        // Add wrapped product names if available
+        if (wrappedProductNames) {
+          properties['wrapped_products'] = wrappedProductNames;
+          console.log('📝 With wrapped products:', wrappedProductNames);
+        }
         
         const response = await fetch('/cart/add.js', {
           method: 'POST',
@@ -467,9 +512,7 @@ document.addEventListener("DOMContentLoaded", function () {
             items: [{
               id: this.variantId,
               quantity: quantity,
-              properties: {
-                '_gift_wrapping': 'true'
-              }
+              properties: properties
             }]
           })
         });
@@ -484,11 +527,24 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     
     /**
-     * Update item quantity in cart
+     * Update item quantity in cart (and properties if provided)
      */
-    async updateCartItem(key, quantity) {
+    async updateCartItem(key, quantity, wrappedProductNames = '') {
       try {
         console.log('📝 Updating cart item. Key:', key, 'New quantity:', quantity);
+        
+        const updateData = {
+          id: key,
+          quantity: quantity
+        };
+        
+        // Try to update properties if provided
+        if (wrappedProductNames) {
+          updateData.properties = {
+            'wrapped_products': wrappedProductNames
+          };
+          console.log('📝 Updating wrapped products:', wrappedProductNames);
+        }
         
         const response = await fetch('/cart/change.js', {
           method: 'POST',
@@ -496,10 +552,7 @@ document.addEventListener("DOMContentLoaded", function () {
             'Content-Type': 'application/json',
             'X-Requested-With': 'XMLHttpRequest'
           },
-          body: JSON.stringify({
-            id: key,
-            quantity: quantity
-          })
+          body: JSON.stringify(updateData)
         });
         
         const result = await response.json();
@@ -607,6 +660,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 updated = true;
                 // Restore checkbox states after DOM update
                 setTimeout(() => {
+                  // Allow re-initialization for this new DOM
+                  this.isInitialized = false;
                   this.syncCheckboxStateFromStorage();
                   this.attachCheckboxListeners();
                 }, 50);
@@ -631,6 +686,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 updated = true;
                 // Restore checkbox states after DOM update
                 setTimeout(() => {
+                  // Allow re-initialization for this new DOM
+                  this.isInitialized = false;
                   this.syncCheckboxStateFromStorage();
                   this.attachCheckboxListeners();
                 }, 50);
