@@ -191,6 +191,215 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 }</style> {% endcomment %}
 
+{% if settings.cart_wrapping_enable %}
+<script>
+(function() {
+  'use strict';
+  
+  const wrappingHandle = {{ settings.cart_wrapping_product_handle | default: 'special-wrapping' | json }};
+  const perItemMode = {{ settings.cart_wrapping_per_item | json }};
+  
+  class GiftWrappingManager {
+    constructor() {
+      this.wrappingHandle = wrappingHandle;
+      this.perItemMode = perItemMode;
+      this.isUpdating = false;
+      this.initialized = false;
+    }
+    
+    init() {
+      if (this.initialized) {
+        // Reinitialize event listeners
+        this.detachEvents();
+      }
+      
+      if (this.perItemMode) {
+        this.initPerItemMode();
+      } else {
+        this.initBulkMode();
+      }
+      
+      this.initialized = true;
+    }
+    
+    detachEvents() {
+      // Remove old event listeners by cloning and replacing checkboxes
+      const oldCheckboxes = document.querySelectorAll('.wrapping-checkbox');
+      oldCheckboxes.forEach(cb => {
+        const newCb = cb.cloneNode(true);
+        cb.parentNode.replaceChild(newCb, cb);
+      });
+    }
+    
+    initPerItemMode() {
+      const checkboxes = document.querySelectorAll('.wrapping-checkbox[data-item-key]');
+      checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', (e) => this.handlePerItemChange(e));
+      });
+    }
+    
+    initBulkMode() {
+      const masterCheckbox = document.querySelector('[data-wrapping-master]');
+      if (masterCheckbox) {
+        masterCheckbox.addEventListener('change', (e) => this.handleBulkChange(e));
+      }
+    }
+    
+    async handlePerItemChange(event) {
+      if (this.isUpdating) return;
+      
+      const checkbox = event.target;
+      const checkedBoxes = document.querySelectorAll('.wrapping-checkbox[data-item-key]:checked');
+      const totalToWrap = Array.from(checkedBoxes).reduce((sum, cb) => {
+        return sum + parseInt(cb.dataset.itemQuantity || 1);
+      }, 0);
+      
+      await this.updateWrappingQuantity(totalToWrap);
+    }
+    
+    async handleBulkChange(event) {
+      if (this.isUpdating) return;
+      
+      const checkbox = event.target;
+      const totalItems = parseInt(checkbox.dataset.totalItems || 0);
+      const quantity = checkbox.checked ? totalItems : 0;
+      
+      await this.updateWrappingQuantity(quantity);
+    }
+    
+    async updateWrappingQuantity(quantity) {
+      this.isUpdating = true;
+      
+      try {
+        const cartResponse = await fetch('/cart.js');
+        const cart = await cartResponse.json();
+        
+        const wrappingItem = cart.items.find(item => 
+          item.product_handle === this.wrappingHandle
+        );
+        
+        if (quantity > 0) {
+          if (wrappingItem) {
+            if (wrappingItem.quantity !== quantity) {
+              await this.changeItemQuantity(wrappingItem.key, quantity);
+            }
+          } else {
+            await this.addWrappingProduct(quantity);
+          }
+        } else {
+          if (wrappingItem) {
+            await this.changeItemQuantity(wrappingItem.key, 0);
+          }
+        }
+        
+        await this.refreshCart();
+      } catch (error) {
+        console.error('Error updating wrapping:', error);
+      } finally {
+        this.isUpdating = false;
+      }
+    }
+    
+    async addWrappingProduct(quantity) {
+      const variantId = await this.getWrappingVariantId();
+      const formData = {
+        items: [{
+          id: variantId,
+          quantity: quantity,
+          properties: {
+            '_gift_wrapping': 'true'
+          }
+        }]
+      };
+      
+      const response = await fetch('/cart/add.js', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData)
+      });
+      
+      return response.json();
+    }
+    
+    async changeItemQuantity(key, quantity) {
+      const response = await fetch('/cart/change.js', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id: key,
+          quantity: quantity
+        })
+      });
+      
+      return response.json();
+    }
+    
+    async getWrappingVariantId() {
+      const response = await fetch(`/products/${this.wrappingHandle}.js`);
+      const product = await response.json();
+      return product.variants[0].id;
+    }
+    
+    async refreshCart() {
+      if (typeof theme !== 'undefined' && theme.cart) {
+        theme.cart.buildCart();
+      } else {
+        if (window.location.pathname === '/cart') {
+          window.location.reload();
+        }
+      }
+    }
+  }
+  
+  // Create global instance
+  window.giftWrappingManager = null;
+  
+  function initGiftWrapping() {
+    const wrappingContainer = document.querySelector('[data-wrapping-container]');
+    if (wrappingContainer) {
+      if (!window.giftWrappingManager) {
+        window.giftWrappingManager = new GiftWrappingManager();
+      }
+      window.giftWrappingManager.init();
+    }
+  }
+  
+  // Initialize on page load
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initGiftWrapping);
+  } else {
+    initGiftWrapping();
+  }
+  
+  // Reinitialize after cart updates (for cart drawer)
+  document.addEventListener('cart:updated', function() {
+    setTimeout(initGiftWrapping, 100);
+  });
+  
+  // Hook into theme cart buildCart if available
+  function hookCartBuild() {
+    if (typeof theme !== 'undefined' && theme.cart && theme.cart.reInit) {
+      const originalReInit = theme.cart.reInit;
+      theme.cart.reInit = function() {
+        originalReInit.call(this);
+        setTimeout(initGiftWrapping, 50);
+      };
+    }
+  }
+  
+  // Try to hook immediately or after theme loads
+  if (typeof theme !== 'undefined') {
+    hookCartBuild();
+  } else {
+    setTimeout(hookCartBuild, 500);
+  }
+})();
+</script>
+{% endif %}
 
 </body>
 </html>
