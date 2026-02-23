@@ -484,7 +484,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const container = document.querySelector('[data-wrapping-container]');
     
     if (container) {
-      console.log('🎁 Initializing gift wrapping...');
+      console.log('✅ 🎁 Wrapping container FOUND! Initializing gift wrapping...');
       
       if (!window.giftWrappingManager) {
         window.giftWrappingManager = new GiftWrappingManager();
@@ -492,22 +492,62 @@ document.addEventListener("DOMContentLoaded", function () {
       
       await window.giftWrappingManager.init();
     } else {
-      console.log('⚠️  Wrapping container not found in DOM');
+      console.log('❌ Wrapping container NOT FOUND in DOM');
+      
+      // Check if the snippet is enabled
+      const settingEnabled = {{ settings.cart_wrapping_enable | json }};
+      console.log('📋 Gift wrapping enabled in settings:', settingEnabled);
+      
+      // Check if there are cart items
+      const cartItems = document.querySelectorAll('[data-products] [data-cart-item]');
+      console.log('📦 Cart items found:', cartItems.length);
+      
+      if (settingEnabled && cartItems.length === 0) {
+        console.log('ℹ️  Cart is empty - wrapping section should appear once items are added');
+      }
     }
+  }
+  
+  /**
+   * Watch for the wrapping container to appear in the DOM
+   * This handles cases where cart is loaded dynamically
+   */
+  function watchForWrappingContainer() {
+    console.log('👀 Setting up DOM watcher for wrapping container...');
+    
+    const observer = new MutationObserver((mutations) => {
+      const container = document.querySelector('[data-wrapping-container]');
+      if (container) {
+        console.log('✅ 👀 Wrapping container detected in DOM via MutationObserver!');
+        observer.disconnect();
+        initGiftWrapping();
+      }
+    });
+    
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: false
+    });
   }
   
   // Initialize on page load
   if (document.readyState === 'loading') {
     console.log('📄 Page loading... waiting for DOMContentLoaded');
-    document.addEventListener('DOMContentLoaded', initGiftWrapping);
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log('📄 DOMContentLoaded fired');
+      initGiftWrapping();
+      watchForWrappingContainer();
+    });
   } else {
     console.log('📄 Page already loaded, initializing now');
     initGiftWrapping();
+    watchForWrappingContainer();
   }
   
   // Reinitialize after cart updates
   document.addEventListener('cart:updated', () => {
-    console.log('📢 Cart updated event fired, reinitializing...');
+    console.log('📢 cart:updated event fired, reinitializing gift wrapping...');
     setTimeout(initGiftWrapping, 200);
   });
   
@@ -519,32 +559,32 @@ document.addEventListener("DOMContentLoaded", function () {
       if (theme.cart && theme.cart.reInit) {
         const originalReInit = theme.cart.reInit;
         theme.cart.reInit = function() {
-          console.log('🔄 Theme cart reInit called');
+          console.log('🔄 theme.cart.reInit called, reinitializing gift wrapping');
           originalReInit.call(this);
           setTimeout(initGiftWrapping, 100);
         };
         console.log('✅ Successfully hooked theme.cart.reInit');
       } else {
-        console.log('⚠️  theme.cart.reInit not found');
+        console.log('⚠️  Could not find theme.cart.reInit to hook into');
       }
     };
     
     hookCartBuild();
   } else {
-    console.log('⚠️  Theme object not immediately available, retrying...');
+    console.log('⚠️  Theme object not found, will retry after delay');
     
     setTimeout(() => {
       if (typeof theme !== 'undefined' && theme.cart && theme.cart.reInit) {
-        console.log('✅ Theme loaded later, hooking into cart system');
+        console.log('✅ Theme loaded, hooking into cart system');
         
         const originalReInit = theme.cart.reInit;
         theme.cart.reInit = function() {
-          console.log('🔄 Theme cart reInit called');
+          console.log('🔄 theme.cart.reInit called');
           originalReInit.call(this);
           setTimeout(initGiftWrapping, 100);
         };
       } else {
-        console.log('❌ Could not find theme.cart.reInit after retry');
+        console.log('❌ Could not find theme object after retry');
       }
     }, 1500);
   }

@@ -7,7 +7,7 @@
 {% if settings.cart_wrapping_enable %}
   {% assign wrapping_handle = settings.cart_wrapping_product_handle | default: 'special-wrapping' %}
   {% assign wrappable_items = cart.items | where_exp: "item", "item.product.handle != wrapping_handle" %}
-  
+
   <div class="cart-gift-wrapping" data-wrapping-container>
     <style>
       .cart-gift-wrapping {
