@@ -17,7 +17,9 @@
         <div class="drawer__scrollable">
           <div data-products class="appear-animation appear-delay-2"></div>
 
-          {%- render 'cart-gift-wrapping' -%}
+          <div data-gift-wrapping-slot>
+            {%- render 'cart-gift-wrapping' -%}
+          </div>
 
           {% if settings.cart_notes_enable %}
             <div class="appear-animation appear-delay-3">

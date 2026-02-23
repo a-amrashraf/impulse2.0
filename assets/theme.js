@@ -1855,7 +1855,8 @@ theme.recentlyViewed = {
   
         return {
           items: html.querySelector('.cart__items'),
-          discounts: html.querySelector('.cart__discounts')
+          discounts: html.querySelector('.cart__discounts'),
+          giftWrapping: html.querySelector('[data-gift-wrapping-ajax]')
         }
       },
   
@@ -1884,6 +1885,12 @@ theme.recentlyViewed = {
         // Append item markup
         this.products.innerHTML = '';
         this.products.append(items);
+
+        // Update gift wrapping markup when available (cart drawer)
+        var giftWrappingSlot = this.form.querySelector('[data-gift-wrapping-slot]');
+        if (giftWrappingSlot && markup.giftWrapping) {
+          giftWrappingSlot.innerHTML = markup.giftWrapping.innerHTML;
+        }
   
         // Update subtotal
         this.subtotal.innerHTML = theme.Currency.formatMoney(subtotal, theme.settings.moneyFormat);
