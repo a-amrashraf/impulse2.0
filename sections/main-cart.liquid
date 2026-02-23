@@ -21,6 +21,8 @@
           {%- endfor -%}
         </div>
         <div class="cart__page-col">
+          {%- render 'cart-gift-wrapping' -%}
+          
           {% if settings.cart_notes_enable %}
             <div>
               <label for="CartNote">{{ 'cart.general.note' | t }}</label>

@@ -1,0 +1,321 @@
+{% comment %}
+  Gift Wrapping Feature
+  - Dynamically adds/removes wrapping based on checked items
+  - Supports both per-item and bulk wrapping
+{% endcomment %}
+
+{% if settings.cart_wrapping_enable %}
+  {% assign wrapping_handle = settings.cart_wrapping_product_handle | default: 'special-wrapping' %}
+  {% assign wrapping_in_cart = false %}
+  {% assign wrapping_item = null %}
+  {% assign wrappable_items = cart.items | where_exp: "item", "item.product.handle != wrapping_handle" %}
+  
+  {% for item in cart.items %}
+    {% if item.product.handle == wrapping_handle %}
+      {% assign wrapping_in_cart = true %}
+      {% assign wrapping_item = item %}
+    {% endif %}
+  {% endfor %}
+
+  <div class="cart-gift-wrapping" data-wrapping-container>
+    <style>
+      .cart-gift-wrapping {
+        margin: 15px 0;
+        padding: 15px;
+        border: 1px solid var(--colorBorder);
+        border-radius: 4px;
+        background: var(--colorBody);
+      }
+      
+      .wrapping-header {
+        font-weight: 600;
+        margin-bottom: 10px;
+        font-size: {{ settings.cart_wrapping_font_size | default: 14 }}px;
+        color: {{ settings.cart_wrapping_text_color | default: '#000000' }};
+        {% if settings.cart_wrapping_font == 'header' %}
+          font-family: var(--typeHeaderPrimary), var(--typeHeaderFallback);
+        {% elsif settings.cart_wrapping_font == 'poppins' %}
+          font-family: 'Poppins', sans-serif;
+        {% else %}
+          font-family: var(--typeBasePrimary), var(--typeBaseFallback);
+        {% endif %}
+      }
+      
+      .wrapping-option {
+        display: flex;
+        align-items: center;
+        margin: 8px 0;
+        padding: 8px;
+        border-radius: 3px;
+        transition: background-color 0.2s;
+      }
+      
+      .wrapping-option:hover {
+        background-color: var(--colorBodyLightDim);
+      }
+      
+      .wrapping-checkbox {
+        width: 18px;
+        height: 18px;
+        margin-right: 10px;
+        cursor: pointer;
+      }
+      
+      .wrapping-label {
+        flex: 1;
+        cursor: pointer;
+        font-size: {{ settings.cart_wrapping_font_size | default: 14 }}px;
+        color: {{ settings.cart_wrapping_text_color | default: '#000000' }};
+        {% if settings.cart_wrapping_font == 'header' %}
+          font-family: var(--typeHeaderPrimary), var(--typeHeaderFallback);
+        {% elsif settings.cart_wrapping_font == 'poppins' %}
+          font-family: 'Poppins', sans-serif;
+        {% else %}
+          font-family: var(--typeBasePrimary), var(--typeBaseFallback);
+        {% endif %}
+      }
+      
+      .wrapping-item-details {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-left: 28px;
+        font-size: 13px;
+        color: #666;
+      }
+      
+      .wrapping-item-image {
+        width: 40px;
+        height: 40px;
+        object-fit: cover;
+        border-radius: 3px;
+      }
+      
+      .wrapping-summary {
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px solid var(--colorBorder);
+        font-size: 13px;
+        color: #666;
+      }
+      
+      .wrapping-bulk-option {
+        background-color: #f9f9f9;
+        border: 2px solid var(--colorBorder);
+        margin-bottom: 15px;
+      }
+    </style>
+
+    {% if settings.cart_wrapping_per_item %}
+      {%- comment -%} Per-item wrapping mode {%- endcomment -%}
+      <div class="wrapping-header">🎁 {{ settings.cart_wrapping_text | default: 'Add special gift wrapping' }}</div>
+      
+      {% for item in wrappable_items %}
+        {% unless item.product.handle == wrapping_handle %}
+          <div class="wrapping-option" data-wrapping-item="{{ item.key }}">
+            <input 
+              type="checkbox" 
+              class="wrapping-checkbox" 
+              id="wrap-{{ item.key }}" 
+              data-item-key="{{ item.key }}"
+              data-item-quantity="{{ item.quantity }}"
+              {% if wrapping_in_cart %}checked{% endif %}
+            >
+            <label for="wrap-{{ item.key }}" class="wrapping-label">
+              Wrap this item
+            </label>
+          </div>
+          <div class="wrapping-item-details">
+            {% if item.image %}
+              <img src="{{ item.image | img_url: '80x80' }}" alt="{{ item.title }}" class="wrapping-item-image">
+            {% endif %}
+            <span>{{ item.product.title }} {% if item.quantity > 1 %}({{ item.quantity }}x){% endif %}</span>
+          </div>
+        {% endunless %}
+      {% endfor %}
+      
+    {% else %}
+      {%- comment -%} Bulk wrapping mode {%- endcomment -%}
+      <div class="wrapping-option wrapping-bulk-option">
+        <input 
+          type="checkbox" 
+          class="wrapping-checkbox" 
+          id="wrap-all" 
+          data-wrapping-master
+          data-total-items="{{ wrappable_items.size }}"
+          {% if wrapping_in_cart %}checked{% endif %}
+        >
+        <label for="wrap-all" class="wrapping-label">
+          🎁 {{ settings.cart_wrapping_text | default: 'Add special gift wrapping' }}
+        </label>
+      </div>
+      
+      <div class="wrapping-summary">
+        <span data-wrapping-count>{{ wrappable_items.size }}</span> item(s) will be wrapped
+      </div>
+    {% endif %}
+  </div>
+
+  <script>
+    (function() {
+      const wrappingHandle = '{{ wrapping_handle }}';
+      const perItemMode = {{ settings.cart_wrapping_per_item | json }};
+      
+      class GiftWrappingManager {
+        constructor() {
+          this.wrappingHandle = wrappingHandle;
+          this.perItemMode = perItemMode;
+          this.isUpdating = false;
+          this.init();
+        }
+        
+        init() {
+          if (this.perItemMode) {
+            this.initPerItemMode();
+          } else {
+            this.initBulkMode();
+          }
+        }
+        
+        initPerItemMode() {
+          const checkboxes = document.querySelectorAll('.wrapping-checkbox[data-item-key]');
+          checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', (e) => this.handlePerItemChange(e));
+          });
+        }
+        
+        initBulkMode() {
+          const masterCheckbox = document.querySelector('[data-wrapping-master]');
+          if (masterCheckbox) {
+            masterCheckbox.addEventListener('change', (e) => this.handleBulkChange(e));
+          }
+        }
+        
+        async handlePerItemChange(event) {
+          if (this.isUpdating) return;
+          
+          const checkbox = event.target;
+          const checkedBoxes = document.querySelectorAll('.wrapping-checkbox[data-item-key]:checked');
+          const totalToWrap = Array.from(checkedBoxes).reduce((sum, cb) => {
+            return sum + parseInt(cb.dataset.itemQuantity || 1);
+          }, 0);
+          
+          await this.updateWrappingQuantity(totalToWrap);
+        }
+        
+        async handleBulkChange(event) {
+          if (this.isUpdating) return;
+          
+          const checkbox = event.target;
+          const totalItems = parseInt(checkbox.dataset.totalItems || 0);
+          const quantity = checkbox.checked ? totalItems : 0;
+          
+          await this.updateWrappingQuantity(quantity);
+        }
+        
+        async updateWrappingQuantity(quantity) {
+          this.isUpdating = true;
+          
+          try {
+            // Get current cart
+            const cartResponse = await fetch('/cart.js');
+            const cart = await cartResponse.json();
+            
+            // Find wrapping product
+            const wrappingItem = cart.items.find(item => 
+              item.product_handle === this.wrappingHandle
+            );
+            
+            if (quantity > 0) {
+              if (wrappingItem) {
+                // Update existing wrapping quantity
+                if (wrappingItem.quantity !== quantity) {
+                  await this.changeItemQuantity(wrappingItem.key, quantity);
+                }
+              } else {
+                // Add wrapping product
+                await this.addWrappingProduct(quantity);
+              }
+            } else {
+              // Remove wrapping product
+              if (wrappingItem) {
+                await this.changeItemQuantity(wrappingItem.key, 0);
+              }
+            }
+            
+            // Refresh cart display
+            await this.refreshCart();
+          } catch (error) {
+            console.error('Error updating wrapping:', error);
+          } finally {
+            this.isUpdating = false;
+          }
+        }
+        
+        async addWrappingProduct(quantity) {
+          const formData = {
+            items: [{
+              id: await this.getWrappingVariantId(),
+              quantity: quantity,
+              properties: {
+                '_gift_wrapping': 'true'
+              }
+            }]
+          };
+          
+          const response = await fetch('/cart/add.js', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+          });
+          
+          return response.json();
+        }
+        
+        async changeItemQuantity(key, quantity) {
+          const response = await fetch('/cart/change.js', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              id: key,
+              quantity: quantity
+            })
+          });
+          
+          return response.json();
+        }
+        
+        async getWrappingVariantId() {
+          const response = await fetch(`/products/${this.wrappingHandle}.js`);
+          const product = await response.json();
+          return product.variants[0].id;
+        }
+        
+        async refreshCart() {
+          // Trigger cart refresh event
+          if (typeof theme !== 'undefined' && theme.cart) {
+            document.dispatchEvent(new CustomEvent('cart:refresh'));
+          }
+          
+          // Fallback: reload page if cart refresh not available
+          if (window.location.pathname === '/cart') {
+            window.location.reload();
+          }
+        }
+      }
+      
+      // Initialize when DOM is ready
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+          new GiftWrappingManager();
+        });
+      } else {
+        new GiftWrappingManager();
+      }
+    })();
+  </script>
+{% endif %}
