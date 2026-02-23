@@ -62,7 +62,7 @@
     "cart_type": "drawer",
     "cart_icon": "bag",
     "cart_additional_buttons": true,
-    "cart_notes_enable": true,
+    "cart_notes_enable": false,
     "cart_notes_hint_text": "you can ask for a special packaging for your purchased items for a small extra fee",
     "social_facebook_link": "https://www.facebook.com/share/178fTfWc8B/?mibextid=wwXIfr",
     "social_pinterest_link": "",
