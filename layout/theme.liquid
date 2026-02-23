@@ -237,12 +237,9 @@ document.addEventListener("DOMContentLoaded", function () {
         // Sync checkbox visual states - this restores from saved variant IDs
         await this.syncCheckboxStateFromStorage();
         
-        // Trigger initial wrapping sync if any items are checked
-        const checkedCount = document.querySelectorAll('.wrapping-checkbox[data-item-key]:checked').length;
-        if (checkedCount > 0) {
-          console.log('📝 Found', checkedCount, 'checked items, syncing...');
-          setTimeout(() => this.updateWrappingFromChecked(), 50);
-        }
+        // DO NOT call updateWrappingFromChecked() on init to avoid re-adding wrapping
+        // The wrapping product should already be in the cart at the correct quantity
+        // Only sync when user manually toggles a checkbox
         
         console.log('✅ Gift wrapping initialized successfully');
       } catch (error) {
@@ -316,10 +313,14 @@ document.addEventListener("DOMContentLoaded", function () {
       // Get all checkboxes and filter out any wrapping product ones
       let checkboxes = Array.from(document.querySelectorAll('.wrapping-checkbox[data-item-key]'));
       
-      // Safety: filter out wrapping product checkboxes by checking parent element text and data attributes
+      // Safety: filter out wrapping product checkboxes by checking multiple properties
       checkboxes = checkboxes.filter(cb => {
         const parent = cb.closest('.wrapping-item');
         if (!parent) return true;
+        
+        // Get item key and extract variant ID
+        const itemKey = cb.dataset.itemKey;
+        const variantId = itemKey.split(':')[0];
         
         // Check the data attribute
         const wrappingItemKey = parent.dataset.wrappingItem;
@@ -328,16 +329,17 @@ document.addEventListener("DOMContentLoaded", function () {
         const titleEl = parent.querySelector('.wrapping-item-title');
         const titleText = (titleEl?.textContent || '').toLowerCase();
         
-        // Multiple ways to detect wrapping product
+        // Multiple ways to detect wrapping product - very aggressive filtering
         const isWrappingProduct = 
           wrappingItemKey?.includes('special-wrapping') ||
           wrappingItemKey?.includes('special wrapping') ||
+          variantId === this.variantId.toString() || // Filter by wrapping variant ID
           titleText.includes('special wrapping') || 
           titleText.includes('special wrap') ||
           titleText.includes('gift wrap');
         
         if (isWrappingProduct) {
-          console.log('⚠️  Filtering out wrapping product checkbox:', wrappingItemKey);
+          console.log('⚠️  Filtering out wrapping product:', variantId, '(wrapping variant:', this.variantId, ')');
           return false;
         }
         return true;
@@ -372,6 +374,86 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     
     /**
+     * Get total quantity of a product in the cart by variant ID
+     * (sums across all entries of the same product)
+     */
+    async getProductQuantityInCart(variantId) {
+      try {
+        const cartResponse = await fetch('/cart.js');
+        const cart = await cartResponse.json();
+        
+        // Sum all quantities for this variant ID
+        const totalQuantity = cart.items.reduce((sum, item) => {
+          if (item.variant_id.toString() === variantId.toString()) {
+            return sum + item.quantity;
+          }
+          return sum;
+        }, 0);
+        
+        console.log(`📦 Product variant ${variantId} total quantity in cart: ${totalQuantity}`);
+        return totalQuantity;
+      } catch (error) {
+        console.error('❌ Error getting product quantity:', error);
+        return 0;
+      }
+    }
+    
+    /**
+     * Validate that wrapping quantity doesn't exceed product quantities
+     * Returns the validated quantity (capped to what's actually available)
+     */
+    async validateWrappingQuantity() {
+      try {
+        const checkedBoxes = document.querySelectorAll('.wrapping-checkbox[data-item-key]:checked');
+        const productVariantMap = new Map(); // variant ID -> { checkedCount, cartQuantity }
+        
+        // Group checked items by product variant
+        for (const cb of checkedBoxes) {
+          const itemKey = cb.dataset.itemKey;
+          const variantId = itemKey.split(':')[0];
+          const quantity = parseInt(cb.dataset.itemQuantity || 1);
+          
+          if (!productVariantMap.has(variantId)) {
+            productVariantMap.set(variantId, { checkedCount: 0, cartQuantity: 0 });
+          }
+          
+          const entry = productVariantMap.get(variantId);
+          entry.checkedCount += quantity;
+        }
+        
+        // For each product variant, check if quantity is valid
+        let errors = [];
+        for (const [variantId, data] of productVariantMap.entries()) {
+          const cartQuantity = await this.getProductQuantityInCart(variantId);
+          data.cartQuantity = cartQuantity;
+          
+          if (data.checkedCount > cartQuantity) {
+            errors.push(`Product variant ${variantId}: trying to wrap ${data.checkedCount} but only ${cartQuantity} in cart`);
+          }
+        }
+        
+        if (errors.length > 0) {
+          console.warn('⚠️  Wrapping quantity validation errors:');
+          errors.forEach(err => console.warn('  - ' + err));
+          
+          // Show user-friendly alert
+          alert(`Unable to wrap all selected items:\n\n${errors.map(err => {
+            const match = err.match(/trying to wrap (\d+) but only (\d+)/);
+            return match ? `You selected to wrap ${match[1]} items, but only ${match[2]} available in cart` : err;
+          }).join('\n\n')}`);
+          
+          return false; // Don't proceed with wrapping
+        }
+        
+        console.log('✅ Wrapping quantity validation passed');
+        return true; // Validation passed
+      } catch (error) {
+        console.error('❌ Error validating wrapping quantity:', error);
+        return false;
+      }
+    }
+    
+    /**
      * Calculate total quantity from checked boxes and sync to cart
      */
     async updateWrappingFromChecked() {
@@ -390,6 +472,15 @@ document.addEventListener("DOMContentLoaded", function () {
       }, 10000);
       
       try {
+        // Validate wrapping quantities first
+        const isValid = await this.validateWrappingQuantity();
+        if (!isValid) {
+          console.log('❌ Wrapping quantity validation failed, aborting syncing');
+          clearTimeout(timeout);
+          this.isUpdating = false;
+          return;
+        }
+        
         const checkedBoxes = document.querySelectorAll('.wrapping-checkbox[data-item-key]:checked');
         const totalToWrap = Array.from(checkedBoxes).reduce((sum, cb) => {
           return sum + parseInt(cb.dataset.itemQuantity || 1);
