@@ -163,6 +163,7 @@
             </label>
             <div class="wrapping-item-title">
               {{ item.product.title }}{% if item.quantity > 1 %} (×{{ item.quantity }}){% endif %}
+              {% if item.quantity > 1 %}<br><span style="font-size: 12px; color: #999;">✓ This will add {{ item.quantity }} wraps</span>{% endif %}
             </div>
           </div>
           {% if item.image %}
