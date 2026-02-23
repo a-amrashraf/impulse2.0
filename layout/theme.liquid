@@ -275,18 +275,10 @@ document.addEventListener("DOMContentLoaded", function () {
       this.cartItemState = {};
       this.activeWrapItems = {};
       this.variantId = null;
-      this.isInitialized = false; // Prevent duplicate initializations
     }
     
     async init() {
       console.log('🎁 Gift Wrapping Manager init started');
-      
-      // Prevent re-initialization (avoid duplicate wrapping adds)
-      if (this.isInitialized) {
-        console.log('⚠️  Gift Wrapping already initialized, skipping...');
-        return;
-      }
-      this.isInitialized = true;
       
       try {
         // Reset stuck state flags
@@ -1063,8 +1055,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 updated = true;
                 // Restore checkbox states after DOM update
                 setTimeout(() => {
-                  // Allow re-initialization for this new DOM
-                  this.isInitialized = false;
                   this.syncCheckboxStateFromStorage();
                   this.attachCheckboxListeners();
                 }, 50);
@@ -1089,8 +1079,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 updated = true;
                 // Restore checkbox states after DOM update
                 setTimeout(() => {
-                  // Allow re-initialization for this new DOM
-                  this.isInitialized = false;
                   this.syncCheckboxStateFromStorage();
                   this.attachCheckboxListeners();
                 }, 50);

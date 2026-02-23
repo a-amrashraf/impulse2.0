@@ -1896,6 +1896,8 @@ theme.recentlyViewed = {
         this.subtotal.innerHTML = theme.Currency.formatMoney(subtotal, theme.settings.moneyFormat);
   
         this.reInit();
+
+        document.dispatchEvent(new CustomEvent('cart:updated'));
   
         if (window.AOS) { AOS.refreshHard() }
   
