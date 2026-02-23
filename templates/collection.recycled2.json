@@ -157,16 +157,16 @@
       ],
       "custom_css": [
         ".grid-product__image-mask {margin-bottom: 4px !important;}",
-        " /* Remove bottom padding under product card */.grid-product__content,.grid-product__meta {padding-bottom: 4px !important; margin-bottom: 4px !important; padding-top: 0px}",
+        " /* Remove bottom padding under product card */.grid-product__content,.grid-product__meta {padding-bottom: 4px !important; margin-bottom: 4px !important; padding-top: 0px;}",
         " /* Optional: remove extra space from the whole card */.grid-product {margin-bottom: 4px !important;}"
       ],
       "settings": {
-        "enable_sidebar": false,
+        "enable_sidebar": true,
         "collapsed": false,
-        "filter_style": "sidebar",
+        "filter_style": "drawer",
         "enable_color_swatches": true,
         "enable_swatch_labels": true,
-        "enable_sort": false
+        "enable_sort": true
       }
     },
     "countdown": {
