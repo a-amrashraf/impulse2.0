@@ -223,107 +223,72 @@ document.addEventListener("DOMContentLoaded", function () {
           console.log('✅ Wrapping variant ID cached:', this.variantId);
         }
         
-        // Sync state first, then attach listeners
-        await this.collectCheckboxState();
+        // Get all checkboxes and restore their state
+        const checkboxes = document.querySelectorAll('.wrapping-checkbox[data-item-key]');
+        console.log('📦 Found', checkboxes.length, 'wrapping checkboxes');
+        
+        checkboxes.forEach(checkbox => {
+          const key = checkbox.dataset.itemKey;
+          // Restore checked state from memory
+          checkbox.checked = !!this.activeWrapItems[key];
+          if (checkbox.checked) {
+            console.log('✅ Restored checked state for:', key);
+          }
+        });
+        
+        // Attach listeners to all checkboxes
         this.attachCheckboxListeners();
         
-        // After listeners are attached, check if we need to restore wrapping state
+        // Trigger initial wrapping sync if any items are checked
         const checkedCount = document.querySelectorAll('.wrapping-checkbox[data-item-key]:checked').length;
         if (checkedCount > 0) {
-          console.log('📝 Restored wrapped items count:', checkedCount);
-          // Give a moment for listeners to be ready
+          console.log('📝 Found', checkedCount, 'checked items, syncing...');
           setTimeout(() => this.updateWrappingFromChecked(), 50);
         }
         
         console.log('✅ Gift wrapping initialized successfully');
       } catch (error) {
         console.error('❌ Gift wrapping init failed:', error);
-        // Reset flag on error to prevent blocking
         this.isUpdating = false;
       }
     }
     
     /**
-     * Collect current state of all checkboxes
-     * Preserve checked states across cart updates and sync with actual cart
+     * Simple state tracking - just match checkboxes to our tracking
      */
-    async collectCheckboxState() {
-      // First, sync with actual cart state to detect manual removals
-      await this.syncStateWithCart();
-      
+    syncCheckboxState() {
       const checkboxes = document.querySelectorAll('.wrapping-checkbox[data-item-key]');
-      const newCartState = {};
-      
       checkboxes.forEach(checkbox => {
         const key = checkbox.dataset.itemKey;
-        newCartState[key] = true; // Item exists in DOM
-        
-        // Restore checked state from tracking
-        if (this.activeWrapItems[key]) {
-          checkbox.checked = true;
-          console.log('✅ Restored checked state for:', key);
-        } else {
-          checkbox.checked = false;
-        }
+        checkbox.checked = !!this.activeWrapItems[key];
       });
-      
-      // Detect removed items
-      const removedItems = Object.keys(this.cartItemState).filter(
-        key => !newCartState[key]
-      );
-      
-      // Cleanup state for removed items
-      removedItems.forEach(key => {
-        console.log('🗑️  Cleaning up removed item:', key);
-        delete this.activeWrapItems[key];
-      });
-      
-      this.cartItemState = newCartState;
-      
-      // Auto-update wrapping if items were removed
-      if (removedItems.length > 0) {
-        console.log('🔄 Removed items detected, updating wrapping...');
-        setTimeout(() => this.updateWrappingFromChecked(), 100);
-      }
-    }
-
-    /**
-     * Sync our tracking state with actual cart to detect manual removals
-     */
-    async syncStateWithCart() {
-      try {
-        const cartResponse = await fetch('/cart.js');
-        const cart = await cartResponse.json();
-        const cartItemKeys = new Set(cart.items.map(item => item.key));
-        
-        // Find items in our tracking that are no longer in cart
-        const itemsToClean = Object.keys(this.activeWrapItems).filter(
-          key => !cartItemKeys.has(key)
-        );
-        
-        // Also check if wrapping was manually removed
-        const wrappingExists = cart.items.some(item => item.product_handle === this.wrappingHandle);
-        if (!wrappingExists && Object.keys(this.activeWrapItems).length > 0) {
-          console.log('🔍 Wrapping was manually removed from cart');
-          // Don't clear activeWrapItems yet - user might be trying to re-add it
-        }
-        
-        // Clean up items that no longer exist in cart
-        itemsToClean.forEach(key => {
-          console.log('🗑️  Item no longer in cart, removing from tracking:', key);
-          delete this.activeWrapItems[key];
-        });
-      } catch (e) {
-        console.warn('⚠️  Could not sync state with cart:', e.message);
-      }
     }
     
     /**
      * Attach change listeners to all checkboxes
      */
     attachCheckboxListeners() {
-      const checkboxes = document.querySelectorAll('.wrapping-checkbox[data-item-key]');
-      console.log('📦 Found', checkboxes.length, 'wrapping checkboxes');
+      // Get all checkboxes and filter out any wrapping product ones
+      let checkboxes = Array.from(document.querySelectorAll('.wrapping-checkbox[data-item-key]'));
+      
+      // Safety: filter out wrapping product checkboxes by checking parent element text
+      checkboxes = checkboxes.filter(cb => {
+        const parent = cb.closest('.wrapping-item');
+        if (!parent) return true;
+        
+        const titleText = (parent.querySelector('.wrapping-item-title')?.textContent || '').toLowerCase();
+        const isWrapping = titleText.includes('special wrap') || 
+                          titleText.includes('gift wrap') ||
+                          titleText.includes('special wrapping');
+        
+        if (isWrapping) {
+          console.log('⚠️  Filtering out wrapping product checkbox:', parent.dataset.wrappingItem);
+          return false;
+        }
+        return true;
+      });
+      
+      console.log('📦 Found', checkboxes.length, 'wrapping checkboxes (after filtering)');
       
       checkboxes.forEach(checkbox => {
         // Clone to remove old listeners
@@ -367,9 +332,6 @@ document.addEventListener("DOMContentLoaded", function () {
       }, 10000);
       
       try {
-        // Always sync state first to catch manual changes
-        await this.syncStateWithCart();
-        
         const checkedBoxes = document.querySelectorAll('.wrapping-checkbox[data-item-key]:checked');
         const totalToWrap = Array.from(checkedBoxes).reduce((sum, cb) => {
           return sum + parseInt(cb.dataset.itemQuantity || 1);
@@ -593,6 +555,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 drawer.innerHTML = newDrawer.innerHTML;
                 console.log('✅ Method 3a: Cart drawer updated');
                 updated = true;
+                // Restore checkbox states after DOM update
+                setTimeout(() => this.syncCheckboxState(), 50);
               }
             } catch (e) {
               console.warn('⚠️  Method 3a failed:', e.message);
@@ -612,6 +576,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 items.innerHTML = newItems.innerHTML;
                 console.log('✅ Method 3b: Cart items updated');
                 updated = true;
+                // Restore checkbox states after DOM update
+                setTimeout(() => this.syncCheckboxState(), 50);
               }
             } catch (e) {
               console.warn('⚠️  Method 3b failed:', e.message);
