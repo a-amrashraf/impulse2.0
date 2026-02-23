@@ -215,8 +215,19 @@ document.addEventListener("DOMContentLoaded", function () {
   // Remove duplicates on script load
   removeDuplicateWrappingContainers();
   
-  // Watch for duplicates being added afterwards
-  const dupObserver = new MutationObserver(() => {
+  // Watch for duplicates being added afterwards (only react when wrapping nodes are involved)
+  const dupObserver = new MutationObserver((mutations) => {
+    const wrappingNodeTouched = mutations.some((mutation) => {
+      return Array.from(mutation.addedNodes || []).some((node) => {
+        if (!node || node.nodeType !== 1) return false;
+        return node.matches?.('[data-wrapping-container]') || !!node.querySelector?.('[data-wrapping-container]');
+      });
+    });
+
+    if (!wrappingNodeTouched) {
+      return;
+    }
+
     const containers = document.querySelectorAll('[data-wrapping-container]');
     if (containers.length > 1) {
       console.log('🚨 Duplicate detected during mutation, removing...');
@@ -228,6 +239,32 @@ document.addEventListener("DOMContentLoaded", function () {
     childList: true,
     subtree: true
   });
+
+  // Global delegated toggle for wrapping accordion (works immediately after any AJAX DOM swap)
+  if (!window.__giftWrappingToggleHandlerBound) {
+    document.addEventListener('click', (event) => {
+      const header = event.target.closest('[data-wrapping-toggle]');
+      if (!header) {
+        return;
+      }
+
+      const container = header.closest('[data-wrapping-container]');
+      if (!container) {
+        return;
+      }
+
+      const itemsContainer = container.querySelector('.wrapping-items-container');
+      const toggleBtn = header.querySelector('.wrapping-toggle-btn');
+      if (!itemsContainer || !toggleBtn) {
+        return;
+      }
+
+      itemsContainer.classList.toggle('collapsed');
+      toggleBtn.classList.toggle('collapsed');
+    });
+
+    window.__giftWrappingToggleHandlerBound = true;
+  }
   
   const wrappingHandle = {{ settings.cart_wrapping_product_handle | default: 'special-wrapping' | json }};
   
@@ -264,9 +301,6 @@ document.addEventListener("DOMContentLoaded", function () {
           console.log('✅ Wrapping variant ID cached:', this.variantId);
         }
 
-        // Ensure wrapping accordion toggle works after dynamic cart re-renders
-        this.attachCollapsibleListeners();
-        
         // Attach listeners to all checkboxes
         this.attachCheckboxListeners();
         
@@ -284,30 +318,6 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     }
 
-    attachCollapsibleListeners() {
-      const headers = document.querySelectorAll('[data-wrapping-container] [data-wrapping-toggle]');
-
-      headers.forEach(header => {
-        if (header.dataset.toggleBound === 'true') {
-          return;
-        }
-
-        header.dataset.toggleBound = 'true';
-
-        header.addEventListener('click', () => {
-          const container = header.closest('[data-wrapping-container]');
-          if (!container) return;
-
-          const itemsContainer = container.querySelector('.wrapping-items-container');
-          const toggleBtn = header.querySelector('.wrapping-toggle-btn');
-          if (!itemsContainer || !toggleBtn) return;
-
-          itemsContainer.classList.toggle('collapsed');
-          toggleBtn.classList.toggle('collapsed');
-        });
-      });
-    }
-    
     /**
      * Save wrapped items by variant ID (persists across item key changes)
      */
