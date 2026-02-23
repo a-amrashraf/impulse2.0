@@ -418,26 +418,50 @@ document.addEventListener("DOMContentLoaded", function () {
         newCheckbox.addEventListener('change', (e) => {
           const key = e.target.dataset.itemKey;
           const isChecked = e.target.checked;
-          console.log('✓✓✓ CHECKBOX CHANGE EVENT FIRED ✓✓✓');
-          console.log('   Key:', key);
-          console.log('   Checked:', isChecked);
+          console.log('\n╔════════════════════════════════════════╗');
+          console.log('║  ✓✓✓ CHECKBOX CHANGE EVENT FIRED ✓✓✓  ║');
+          console.log('╚════════════════════════════════════════╝');
+          console.log('🔑 KEY:', key);
+          console.log('✅ CHECKED:', isChecked);
+          console.log('🎁 Manager instance:', typeof this === 'object' ? 'YES' : 'NO');
+          console.log('📌 Has updateWrappingFromChecked:', typeof this?.updateWrappingFromChecked === 'function' ? 'YES' : 'NO');
+          
+          console.log('\n📝 Before state update:');
+          console.log('   activeWrapItems count:', Object.keys(this.activeWrapItems).length);
+          console.log('   Items:', Object.keys(this.activeWrapItems).join(', ') || '(none)');
           
           if (isChecked) {
             this.activeWrapItems[key] = true;
-            console.log('   ✅ Added to activeWrapItems');
+            console.log('   ACTION: Adding', key, 'to activeWrapItems');
           } else {
             delete this.activeWrapItems[key];
-            console.log('   ❌ Removed from activeWrapItems');
+            console.log('   ACTION: Removing', key, 'from activeWrapItems');
           }
           
-          console.log('   Current activeWrapItems:', Object.keys(this.activeWrapItems));
+          console.log('\n📝 After state update:');
+          console.log('   activeWrapItems count:', Object.keys(this.activeWrapItems).length);
+          console.log('   Items:', Object.keys(this.activeWrapItems).join(', ') || '(none)');
           
-          // Save state by variant ID (survives item key changes)
+          // Save state by variant ID
+          console.log('\n💾 Saving state by variant ID...');
           this.saveStateByVariantId();
           
-          console.log('🔄 TRIGGERING updateWrappingFromChecked...');
-          // Immediately update cart
-          this.updateWrappingFromChecked();
+          console.log('\n📞 CALLING updateWrappingFromChecked()...');
+          try {
+            const result = this.updateWrappingFromChecked();
+            console.log('📞 updateWrappingFromChecked returned:', result ? 'PROMISE' : 'undefined');
+            if (result && typeof result.then === 'function') {
+              console.log('   ⏳ Waiting for promise...');
+              result.then(() => {
+                console.log('   ✅ Promise resolved successfully');
+              }).catch(err => {
+                console.error('   ❌ Promise rejected:', err);
+              });
+            }
+          } catch (error) {
+            console.error('❌ ERROR calling updateWrappingFromChecked:', error);
+          }
+          console.log('');
         });
       });
     }
@@ -526,7 +550,9 @@ document.addEventListener("DOMContentLoaded", function () {
      * Calculate total quantity from checked boxes and sync to cart
      */
     async updateWrappingFromChecked() {
-      console.log('\n=== updateWrappingFromChecked STARTED ===');
+      console.log('\n╔═══════════════════════════════════════════════════╗');
+      console.log('║  UPDATE WRAPPING FROM CHECKED CALLED              ║');
+      console.log('╚═══════════════════════════════════════════════════╝\n');
       
       if (this.isUpdating) {
         console.log('⏳ Already updating, skipping...');
@@ -590,7 +616,9 @@ document.addEventListener("DOMContentLoaded", function () {
      * Sync wrapping quantity to cart with product names
      */
     async syncWrappingToCart(quantity) {
-      console.log('\n=== syncWrappingToCart STARTED ===');
+      console.log('\n╔═══════════════════════════════════════════════════╗');
+      console.log('║  SYNC WRAPPING TO CART CALLED [Qty: ' + String(quantity).padEnd(3) + '] ║');
+      console.log('╚═══════════════════════════════════════════════════╝\n');
       console.log('📥 Incoming quantity param:', quantity);
       
       try {
@@ -632,10 +660,16 @@ document.addEventListener("DOMContentLoaded", function () {
         console.log('   FINAL isEmpty:', isEmpty);
         
         if (isEmpty) {
-          console.log('\n🗑️✂️✂️ ALL ITEMS UNCHECKED - REMOVE WRAPPING ✂️✂️🗑️');
+          console.log('\n╔═══════════════════════════════════════════════════╗');
+          console.log('║ 🗑️✂️✂️ REMOVING WRAPPING PRODUCT ✂️✂️🗑️          ║');
+          console.log('╚═══════════════════════════════════════════════════╝\n');
           
           if (wrappingItem) {
-            console.log('Wrapping item exists, proceeding with removal...');
+            console.log('💥 Wrapping item FOUND in cart, attempting removal...');
+            console.log('   Handle:', wrappingItem.product_handle);
+            console.log('   Key:', wrappingItem.key);
+            console.log('   Quantity:', wrappingItem.quantity);
+            
             let removed = false;
             
             // Attempt 1: Direct API call
