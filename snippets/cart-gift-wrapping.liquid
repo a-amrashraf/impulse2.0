@@ -143,10 +143,10 @@
     
     <div class="wrapping-header" data-wrapping-toggle>
       <span>🎁 {{ settings.cart_wrapping_text | default: 'Add special gift wrapping' }}</span>
-      <button class="wrapping-toggle-btn" type="button" aria-label="Toggle gift wrapping options">▼</button>
+      <button class="wrapping-toggle-btn collapsed" type="button" aria-label="Toggle gift wrapping options">▼</button>
     </div>
     
-    <div class="wrapping-items-container">
+    <div class="wrapping-items-container collapsed">
       {% if wrappable_items.size > 0 %}
       {% for item in wrappable_items %}
         <div class="wrapping-item" data-wrapping-item="{{ item.key }}">
@@ -216,10 +216,16 @@
           const containerId = container.id;
           if (containerId) {
             try {
-              const isCollapsed = localStorage.getItem(`wrapping_collapsed_${containerId}`) === 'true';
+              const saved = localStorage.getItem(`wrapping_collapsed_${containerId}`);
+              // If no saved state, default to collapsed (true)
+              // Otherwise use the saved state
+              const isCollapsed = saved === null ? true : saved === 'true';
               if (isCollapsed) {
                 itemsContainer.classList.add('collapsed');
                 toggleBtn.classList.add('collapsed');
+              } else {
+                itemsContainer.classList.remove('collapsed');
+                toggleBtn.classList.remove('collapsed');
               }
             } catch (e) {
               console.warn('Could not restore wrapping state:', e);
