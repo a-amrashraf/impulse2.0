@@ -84,7 +84,7 @@
                             aria-controls="Sublinklist-{{ child_list_handle }}-{{ grand_child_list_handle }}"{% if childlink.active or childlink.child_active %} aria-open="true"{% endif %}
                             class="mobile-nav__link--button collapsible-trigger{% if childlink.active or childlink.child_active %} is-open{% endif %}">
                               <span class="mobile-nav__faux-link"{% if childlink.active %} data-active="true"{% endif %}>{{ childlink.title | escape }}</span>
-                              {%- render 'collapsible-icons-alt' -%}
+                              {%- render 'collapsible-icons-alt', no_circle: true -%}
                             </button>
                           {%- else -%}
                             <a href="{{ childlink.url }}"
@@ -99,7 +99,7 @@
                               aria-controls="Sublinklist-{{ child_list_handle }}-{{ grand_child_list_handle }}"
                               aria-labelledby="Sublabel-{{ grand_child_list_handle }}"
                               class="collapsible-trigger{% if childlink.active or childlink.child_active %} is-open{% endif %}">
-                              {%- render 'collapsible-icons-alt' -%}
+                              {%- render 'collapsible-icons-alt', no_circle: true -%}
                             </button>
                           {%- endif -%}
                         </div>
