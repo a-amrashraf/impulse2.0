@@ -78,7 +78,7 @@
     "favicon": "shopify://shop_images/logo_white_trans_3c08157b-e3c5-4886-ad7c-b8beb47eab4f.png",
     "predictive_search_enabled": true,
     "show_breadcrumbs": false,
-    "disable_animations": true,
+    "disable_animations": false,
     "checkout_accent_color": "#111111",
     "checkout_body_background_color": "#ffffff",
     "checkout_button_color": "#111111",
