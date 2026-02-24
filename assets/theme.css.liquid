@@ -6738,27 +6738,17 @@ details[open]>.site-nav__dropdown{
 .mobile-nav__faux-link,.mobile-nav__link{
   display:block;
   font-family: 'Poppins', sans-serif;
-  font-weight:600;
 }
 
 .mobile-nav__link--top-level{
   font-size:1.4em;
 }
 
-.mobile-nav__has-sublist .mobile-nav__link--top-level,
-.mobile-nav__has-sublist .mobile-nav__faux-link{
-  font-weight:600;
-}
-
 .mobile-nav--heading-style .mobile-nav__link--top-level{
     font-family:var(--typeHeaderPrimary), var(--typeHeaderFallback);
-  font-weight:600;
+    font-weight:var(--typeHeaderWeight);
     letter-spacing:var(--typeHeaderSpacing);
     line-height:var(--typeHeaderLineHeight);
-}
-
-.mobile-nav--heading-style .mobile-nav__has-sublist .mobile-nav__link--top-level{
-  font-weight:600;
 }
 
 [data-type_header_capitalize=true] .mobile-nav--heading-style .mobile-nav__link--top-level{
@@ -6866,7 +6856,7 @@ details[open]>.site-nav__dropdown{
   }
 
 .mobile-nav__sublist .mobile-nav__faux-link,.mobile-nav__sublist .mobile-nav__link{
-  font-weight:600;
+    font-weight:400;
     padding:7.5px 25px 7.5px var(--drawer-gutter);
   }
 

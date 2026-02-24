@@ -95,7 +95,7 @@
         ".drawer__title {font-size: 25px;}",
         "@media only screen and (max-width: 768px) {.site-header {padding: 0 !important; border-bottom: 1.5px solid #ffffff; }}",
         "@media only screen and (min-width: 768px) {.site-header {padding: 0 !important; border-bottom: 1.5px solid #ffffff; }}",
-        ".site-nav__link--icon .icon {height: 20px; width: 20px;}",
+        ".drawer a,.drawer .mobile-nav__item,.drawer .collapsible-trigger {font-weight: bold !important;}",
         ".drawer__title {font-size: 12px;}"
       ],
       "settings": {
