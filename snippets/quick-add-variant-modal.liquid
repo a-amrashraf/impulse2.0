@@ -3,7 +3,7 @@
   Shows variant options and quantity selector when adding product to cart from grid
 {% endcomment %}
 
-<div id="QuickAddModal-{{ product.id }}" class="modal modal--square quick-add-modal" data-product-id="{{ product.id }}" style="display: none;">
+<div id="QuickAddModal-{{ product.id }}" class="modal modal--square quick-add-modal" data-product-id="{{ product.id }}">
   <div class="modal__inner">
     <div class="modal__centered">
       <div class="modal__centered-content">
@@ -96,9 +96,16 @@
     height: 100%;
     z-index: 9999;
     background: rgba(0, 0, 0, 0.6);
-    display: flex;
+    display: none;
     align-items: center;
     justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  .quick-add-modal.is-visible {
+    display: flex;
+    opacity: 1;
   }
 
   .quick-add-modal__content {

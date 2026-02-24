@@ -8457,10 +8457,10 @@ theme.recentlyViewed = {
 
     // Initialize quick add to cart forms on product grid items
     document.querySelectorAll('.grid-product__quick-add').forEach(function(form) {
-      var hasOnlyDefaultVariant = form.dataset.hasVariants === 'true';
+      var hasOnlyDefault = form.dataset.hasOnlyDefault === 'true';
       
       // If product has multiple variants, open modal on click
-      if (!hasOnlyDefaultVariant) {
+      if (!hasOnlyDefault) {
         var btn = form.querySelector('.grid-product__quick-add-btn');
         if (btn) {
           btn.addEventListener('click', function(e) {
@@ -8469,7 +8469,7 @@ theme.recentlyViewed = {
             var productId = form.dataset.productId;
             var modal = document.getElementById('QuickAddModal-' + productId);
             if (modal) {
-              modal.style.display = 'block';
+              modal.classList.add('is-visible');
               document.body.style.overflow = 'hidden';
             }
           });
@@ -8505,7 +8505,7 @@ theme.recentlyViewed = {
         var productId = form.dataset.productId;
         var modal = document.getElementById('QuickAddModal-' + productId);
         if (modal) {
-          modal.style.display = 'none';
+          modal.classList.remove('is-visible');
           document.body.style.overflow = '';
           // Reset form
           form.reset();
@@ -8544,7 +8544,7 @@ theme.recentlyViewed = {
         var modalId = btn.dataset.modalId;
         var modal = document.getElementById('QuickAddModal-' + modalId);
         if (modal) {
-          modal.style.display = 'none';
+          modal.classList.remove('is-visible');
           document.body.style.overflow = '';
         }
       });
@@ -8554,7 +8554,7 @@ theme.recentlyViewed = {
     document.querySelectorAll('.quick-add-modal').forEach(function(modal) {
       modal.addEventListener('click', function(e) {
         if (e.target === modal) {
-          modal.style.display = 'none';
+          modal.classList.remove('is-visible');
           document.body.style.overflow = '';
         }
       });
@@ -8563,9 +8563,9 @@ theme.recentlyViewed = {
     // Close modal with Escape key
     document.addEventListener('keyup', function(e) {
       if (e.key === 'Escape' || e.keyCode === 27) {
-        var openModal = document.querySelector('.quick-add-modal[style*="display: block"]');
+        var openModal = document.querySelector('.quick-add-modal.is-visible');
         if (openModal) {
-          openModal.style.display = 'none';
+          openModal.classList.remove('is-visible');
           document.body.style.overflow = '';
         }
       }
