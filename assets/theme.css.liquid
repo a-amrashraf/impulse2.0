@@ -5177,7 +5177,7 @@ svg.icon-trash{
 
 .appear-animation{
   opacity:0;
-  transform:translateY(60px);
+  transform:translateX(40px);
 }
 
 [data-disable-animations=true] .appear-animation{
@@ -5187,7 +5187,16 @@ svg.icon-trash{
 
 .js-drawer-open .appear-animation{
   opacity:1;
-  transform:translateY(0px);
+  transform:translateX(0);
+}
+
+.drawer--left .appear-animation{
+  transform:translateX(-40px);
+}
+
+.js-drawer-open .drawer--left .appear-animation{
+  opacity:1;
+  transform:translateX(0);
 }
 
 .js-drawer-closing .appear-animation{
