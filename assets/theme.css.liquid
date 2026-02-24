@@ -6744,11 +6744,20 @@ details[open]>.site-nav__dropdown{
   font-size:1.4em;
 }
 
+.mobile-nav__has-sublist .mobile-nav__link--top-level,
+.mobile-nav__has-sublist .mobile-nav__faux-link{
+  font-weight:600;
+}
+
 .mobile-nav--heading-style .mobile-nav__link--top-level{
     font-family:var(--typeHeaderPrimary), var(--typeHeaderFallback);
     font-weight:var(--typeHeaderWeight);
     letter-spacing:var(--typeHeaderSpacing);
     line-height:var(--typeHeaderLineHeight);
+}
+
+.mobile-nav--heading-style .mobile-nav__has-sublist .mobile-nav__link--top-level{
+  font-weight:600;
 }
 
 [data-type_header_capitalize=true] .mobile-nav--heading-style .mobile-nav__link--top-level{
