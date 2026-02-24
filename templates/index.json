@@ -606,6 +606,7 @@
         "@media (max-width: 768px) {.grid__item {padding: 1px; }}",
         ".section--divider {border-top: none; /* removes unnecessary border */ padding-top: 0;}",
         ".page-full,.page-width,.index-section {padding: 0; margin: 0;}",
+        ".page-width {max-width: 100%; padding-left: 0; padding-right: 0;}",
         ".collection-item__title--heading {font-size: 12px;}"
       ],
       "name": "t:sections.featured-collections.presets.collection_list.name",
