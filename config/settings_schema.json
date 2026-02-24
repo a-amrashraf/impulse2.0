@@ -223,7 +223,7 @@
         "type": "font_picker",
         "id": "type_header_font_family",
         "label": "t:settings_schema.typography.settings.type_header_font_family.label",
-        "default": "fahkwang_n3"
+        "default": "poppins"
       },
       {
         "type": "select",
@@ -313,7 +313,7 @@
         "type": "font_picker",
         "id": "type_base_font_family",
         "label": "t:settings_schema.typography.settings.type_base_font_family.label",
-        "default": "fahkwang_n3"
+        "default": "poppins"
       },
       {
         "type": "select",
