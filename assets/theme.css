@@ -2060,7 +2060,7 @@ img{
   animation:scrolling-text var(--move-speed) linear infinite;
   animation-play-state:running;
   display:inline-flex;
-  margin:0.05em 0;
+  margin:0;
   visibility:visible;
   white-space:nowrap;
 }
@@ -5774,14 +5774,14 @@ form+.footer__social{
 
 .site-header{
   background:var(--colorNav);
-  padding:4px 0;
+  padding:2px 0;
   position:relative;
 }
 
 @media only screen and (min-width:769px){
 
 .site-header{
-  padding:14px 0;
+  padding:10px 0;
 }
 
 .toolbar+.header-sticky-wrapper .site-header{
