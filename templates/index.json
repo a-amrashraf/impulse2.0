@@ -380,7 +380,7 @@
       ],
       "disabled": true,
       "custom_css": [
-        ".jdgm-text p {font-family: MakroTrial-Bold; font-size: 12px;}"
+        ".jdgm-text p {font-family: 'Poppins', sans-serif; font-size: 12px;}"
       ],
       "settings": {
         "full_width": true,
