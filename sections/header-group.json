@@ -80,8 +80,8 @@
           "settings": {
             "logo": "shopify://shop_images/HELIO_NAME_-_REBRAND_png_76445b3a-dc47-4ba1-966e-cf77639d590f.png",
             "logo-inverted": "shopify://shop_images/WITHLOGOSMlaaaast_LOGO_HELIO_-_REBRAND_BLACK_BG_-_Copy.png",
-            "desktop_logo_width": 120,
-            "mobile_logo_width": 90
+            "desktop_logo_width": 85,
+            "mobile_logo_width": 60
           }
         }
       },
@@ -93,10 +93,13 @@
         ".collapsible-trigger {border: 0px;}",
         "ul.mobile-nav a[href*=\"on-sale\"] {color: red !important;}",
         ".drawer__title {font-size: 25px;}",
+        ".site-nav__link--icon .icon {height: 20px; width: 20px;}",
+        ".site-nav__link--icon {padding-left: 6px !important; padding-right: 6px !important;}",
+        "@media only screen and (max-width: 768px) {.site-nav__link--icon {padding-left: 4px !important; padding-right: 4px !important;}}",
+        ".site-header__logo {margin: 0 !important;}",
         "@media only screen and (max-width: 768px) {.site-header {padding: 0 !important; border-bottom: 1.5px solid #ffffff; }}",
         "@media only screen and (min-width: 768px) {.site-header {padding: 0 !important; border-bottom: 1.5px solid #ffffff; }}",
-        ".megamenu .site-nav__dropdown-link[href*=\"wallet\"] {font-family: var(--typeBasePrimary), var(--typeBaseFallback) !important; font-size: calc(var(--typeBaseSize) - 1px) !important; font-weight: var(--typeBaseWeight) !important; letter-spacing: var(--typeBaseSpacing) !important; line-height: 1.5 !important; text-transform: none !important;}",
-        ".mobile-nav__sublist .mobile-nav__link[href*=\"wallet\"] {font-family: inherit !important; font-size: inherit !important; font-weight: 600 !important; letter-spacing: inherit !important; text-transform: inherit !important;}",
+        ".site-nav__link,.site-nav__dropdown-link,.mobile-nav__link,.mobile-nav__faux-link,.mobile-nav__toggle .faux-button,.mobile-nav__toggle button,.collapsible-trigger {font-weight: 700 !important;}",
         ".drawer__title {font-size: 12px;}"
       ],
       "settings": {
