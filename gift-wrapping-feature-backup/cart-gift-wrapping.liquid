@@ -1,0 +1,190 @@
+{% comment %}
+  Gift Wrapping Feature - Per-Item Only
+  - Adds a checkbox for each product to enable individual item wrapping
+  - Dynamically updates wrapping quantity based on checked items
+{% endcomment %}
+
+{% if settings.cart_wrapping_enable %}
+  {% assign wrapping_handle = settings.cart_wrapping_product_handle | default: 'special-wrapping' %}
+  {% comment %} Exclude wrapping product - check by handle and also by the special property we add {% endcomment %}
+  {% assign wrappable_items = cart.items | where_exp: "item", "item.product.handle != wrapping_handle and item.properties._gift_wrapping != 'true'" %}
+
+  <div class="cart-gift-wrapping" data-wrapping-container id="gift-wrapping-container-{{ 'now' | date: '%s' }}">
+    <style>
+      .cart-gift-wrapping {
+        margin: 8px 0;
+        padding: 8px;
+        border: 1px solid var(--colorBorder);
+        border-radius: 4px;
+        background: var(--colorBody);
+      }
+      
+      .wrapping-header {
+        font-weight: 500;
+        margin-bottom: 8px;
+        font-size: 12px;
+        color: {{ settings.cart_wrapping_text_color | default: '#000000' }};
+        {% if settings.cart_wrapping_font == 'header' %}
+          font-family: var(--typeHeaderPrimary), var(--typeHeaderFallback);
+        {% elsif settings.cart_wrapping_font == 'poppins' %}
+          font-family: 'Poppins', sans-serif;
+        {% else %}
+          font-family: var(--typeBasePrimary), var(--typeBaseFallback);
+        {% endif %}
+      }
+      
+      .wrapping-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 6px;
+        padding: 6px;
+        margin-bottom: 6px;
+        border-radius: 4px;
+        border: 1px solid var(--colorBorder);
+        background-color: #fafafa;
+      }
+      
+      .wrapping-item:hover {
+        background-color: #f5f5f5;
+      }
+      
+      .wrapping-checkbox {
+        width: 14px;
+        height: 14px;
+        margin-top: 2px;
+        cursor: pointer;
+        flex-shrink: 0;
+      }
+      
+      .wrapping-item-content {
+        flex: 1;
+      }
+      
+      .wrapping-item-label {
+        cursor: pointer;
+        font-size: {{ settings.cart_wrapping_font_size | default: 11 }}px;
+        color: {{ settings.cart_wrapping_text_color | default: '#000000' }};
+        font-weight: 500;
+        display: block;
+        margin-bottom: 3px;
+        {% if settings.cart_wrapping_font == 'header' %}
+          font-family: var(--typeHeaderPrimary), var(--typeHeaderFallback);
+        {% elsif settings.cart_wrapping_font == 'poppins' %}
+          font-family: 'Poppins', sans-serif;
+        {% else %}
+          font-family: var(--typeBasePrimary), var(--typeBaseFallback);
+        {% endif %}
+      }
+      
+      .wrapping-item-title {
+        font-size: 10px;
+        color: #666;
+      }
+      
+      .wrapping-item-image {
+        width: 35px;
+        height: 35px;
+        object-fit: cover;
+        border-radius: 3px;
+        border: 1px solid var(--colorBorder);
+      }
+      
+      .wrapping-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        cursor: pointer;
+        user-select: none;
+        padding: 6px 0;
+      }
+      
+      .wrapping-header:hover {
+        opacity: 0.8;
+      }
+      
+      .wrapping-toggle-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 18px;
+        height: 18px;
+        background-color: transparent;
+        border: 1px solid var(--colorBorder);
+        border-radius: 3px;
+        cursor: pointer;
+        padding: 0;
+        font-size: 14px;
+        line-height: 1;
+        transition: transform 0.2s ease, background-color 0.2s ease;
+      }
+      
+      .wrapping-toggle-btn:hover {
+        background-color: #f0f0f0;
+      }
+      
+      .wrapping-toggle-btn.collapsed {
+        transform: rotate(0deg);
+      }
+      
+      .wrapping-toggle-btn:not(.collapsed) {
+        transform: rotate(45deg);
+      }
+      
+      .wrapping-items-container {
+        max-height: 1000px;
+        overflow: hidden;
+        transition: max-height 0.3s ease, opacity 0.3s ease;
+        opacity: 1;
+      }
+      
+      .wrapping-items-container.collapsed {
+        max-height: 0;
+        opacity: 0;
+      }
+    </style>
+
+    <style>
+      {# Hide wrapping product checkbox if it somehow appears #}
+      .wrapping-item[data-wrapping-item*="special-wrapping"],
+      .wrapping-item[data-wrapping-item*="special wrapping"] {
+        display: none !important;
+      }
+    </style>
+    
+    <div class="wrapping-header" data-wrapping-toggle>
+      <span>🎁 {{ settings.cart_wrapping_text | default: 'Add special gift wrapping' }}</span>
+      <button class="wrapping-toggle-btn collapsed" type="button" aria-label="Toggle gift wrapping options">+</button>
+    </div>
+    
+    <div class="wrapping-items-container collapsed">
+      {% if wrappable_items.size > 0 %}
+      {% for item in wrappable_items %}
+        <div class="wrapping-item" data-wrapping-item="{{ item.key }}">
+          <input 
+            type="checkbox" 
+            class="wrapping-checkbox" 
+            id="wrap-{{ item.key }}" 
+            data-item-key="{{ item.key }}"
+            data-item-quantity="{{ item.quantity }}"
+          >
+          <div class="wrapping-item-content">
+            <label for="wrap-{{ item.key }}" class="wrapping-item-label">
+              {{ settings.cart_wrapping_text | default: 'Special wrap' }}
+            </label>
+            <div class="wrapping-item-title">
+              {{ item.product.title }}{% if item.quantity > 1 %} (×{{ item.quantity }}){% endif %}
+              {% if item.quantity > 1 %}<br><span style="font-size: 12px; color: #999;">✓ This will add {{ item.quantity }} wraps</span>{% endif %}
+            </div>
+          </div>
+          {% if item.image %}
+            <img src="{{ item.image | img_url: '35x35' }}" alt="{{ item.title }}" class="wrapping-item-image">
+          {% endif %}
+        </div>
+      {% endfor %}
+    {% else %}
+      <p style="color: #666; font-size: 10px;">No items to wrap</p>
+    {% endif %}
+    </div>
+  </div>
+  
+{% endif %}

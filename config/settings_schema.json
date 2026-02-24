@@ -892,65 +892,6 @@
         "type": "url",
         "id": "cart_terms_conditions_page",
         "label": "t:settings_schema.cart.settings.cart_terms_conditions_page.label"
-      },
-      {
-        "type": "header",
-        "content": "Gift Wrapping Options"
-      },
-      {
-        "type": "checkbox",
-        "id": "cart_wrapping_enable",
-        "label": "Enable gift wrapping",
-        "default": true
-      },
-      {
-        "type": "text",
-        "id": "cart_wrapping_product_handle",
-        "label": "Wrapping product handle",
-        "info": "Enter the product handle for the wrapping product (e.g., 'special-wrapping')",
-        "default": "special-wrapping"
-      },
-      {
-        "type": "text",
-        "id": "cart_wrapping_text",
-        "label": "Wrapping checkbox label",
-        "default": "Add special gift wrapping"
-      },
-      {
-        "type": "select",
-        "id": "cart_wrapping_font",
-        "label": "Wrapping text font",
-        "options": [
-          {
-            "value": "base",
-            "label": "Body font"
-          },
-          {
-            "value": "header",
-            "label": "Header font"
-          },
-          {
-            "value": "poppins",
-            "label": "Poppins"
-          }
-        ],
-        "default": "base"
-      },
-      {
-        "type": "range",
-        "id": "cart_wrapping_font_size",
-        "min": 12,
-        "max": 24,
-        "step": 1,
-        "unit": "px",
-        "label": "Wrapping text font size",
-        "default": 14
-      },
-      {
-        "type": "color",
-        "id": "cart_wrapping_text_color",
-        "label": "Wrapping text color",
-        "default": "#000000"
       }
     ]
   },
