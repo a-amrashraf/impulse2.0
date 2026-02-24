@@ -16,7 +16,7 @@
       "custom_css": [
         ".scrolling-text--sections--19811384131815__scrolling_text_BmWKG3 span {font-size: 8px;}",
         ".scrolling-text {background-color: black; color: white;}",
-        ".scrolling-text,.scrolling-text * {line-height: 1 !important;}",
+        ".scrolling-text,.scrolling-text * {line-height: 0.7 !important;}",
         "@media only screen and (max-width: 768px) {.scrolling-text {padding: 0 !important; border-bottom: 1.5px solid #ffffff; }}"
       ],
       "name": "t:sections.marquee.presets.scrolling_text.name",
