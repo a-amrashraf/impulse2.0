@@ -6590,6 +6590,7 @@ details[open]>.site-nav__dropdown{
 
 .mobile-nav__faux-link,.mobile-nav__link{
   display:block;
+  font-weight:600;
 }
 
 .mobile-nav__link--top-level{
@@ -6603,7 +6604,7 @@ details[open]>.site-nav__dropdown{
 
 .mobile-nav--heading-style .mobile-nav__link--top-level{
     font-family:var(--typeHeaderPrimary), var(--typeHeaderFallback);
-    font-weight:var(--typeHeaderWeight);
+  font-weight:600;
     letter-spacing:var(--typeHeaderSpacing);
     line-height:var(--typeHeaderLineHeight);
 }
@@ -6722,7 +6723,7 @@ details[open]>.site-nav__dropdown{
   }
 
 .mobile-nav__sublist .mobile-nav__faux-link,.mobile-nav__sublist .mobile-nav__link{
-    font-weight:400;
+  font-weight:600;
     padding:7.5px 25px 7.5px var(--drawer-gutter);
   }
 
