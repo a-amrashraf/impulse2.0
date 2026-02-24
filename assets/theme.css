@@ -5,6 +5,10 @@
   http://archetypethemes.co
 */
 
+* {
+  font-family: 'Poppins', sans-serif !important;
+}
+
 @media only screen and (min-width:769px){
   :root{
     --grid-gutter:12px;
