@@ -186,7 +186,7 @@ Arguments
         {%- endif -%}
 
         {%- if product.available -%}
-          <form method="post" action="{{ routes.cart_add_url }}" class="grid-product__quick-add" data-product-id="{{ product.id }}">
+          <form method="post" action="{{ routes.cart_add_url }}" class="grid-product__quick-add" data-product-id="{{ product.id }}" data-has-variants="{{ product.has_only_default_variant | default: true }}">
             <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}">
             <input type="hidden" name="quantity" value="1">
             <button type="submit" class="grid-product__quick-add-btn" aria-label="{{ 'products.product.add_to_cart' | t }}">
@@ -371,4 +371,6 @@ Arguments
   {%- if quick_shop_enable and type == blank -%}
     {%- render 'quick-shop-modal', product: product -%}
   {%- endif -%}
+  
+  {%- render 'quick-add-variant-modal', product: product -%}
 </div>

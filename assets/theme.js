@@ -8457,16 +8457,117 @@ theme.recentlyViewed = {
 
     // Initialize quick add to cart forms on product grid items
     document.querySelectorAll('.grid-product__quick-add').forEach(function(form) {
-      new theme.AjaxProduct(form, '.grid-product__quick-add-btn');
-      // Prevent form and button clicks from triggering product link
-      form.addEventListener('click', function(e) {
-        e.stopPropagation();
-      });
-      var btn = form.querySelector('.grid-product__quick-add-btn');
-      if (btn) {
-        btn.addEventListener('click', function(e) {
+      var hasOnlyDefaultVariant = form.dataset.hasVariants === 'true';
+      
+      // If product has multiple variants, open modal on click
+      if (!hasOnlyDefaultVariant) {
+        var btn = form.querySelector('.grid-product__quick-add-btn');
+        if (btn) {
+          btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            var productId = form.dataset.productId;
+            var modal = document.getElementById('QuickAddModal-' + productId);
+            if (modal) {
+              modal.style.display = 'block';
+              document.body.style.overflow = 'hidden';
+            }
+          });
+        }
+        
+        // Prevent form clicks from triggering product link
+        form.addEventListener('click', function(e) {
           e.stopPropagation();
         });
+      } else {
+        // Product has only one variant, use normal quick add
+        new theme.AjaxProduct(form, '.grid-product__quick-add-btn');
+        
+        // Prevent form and button clicks from triggering product link
+        form.addEventListener('click', function(e) {
+          e.stopPropagation();
+        });
+        var btn = form.querySelector('.grid-product__quick-add-btn');
+        if (btn) {
+          btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+          });
+        }
+      }
+    });
+
+    // Initialize quick add variant modal forms
+    document.querySelectorAll('.quick-add-modal__form').forEach(function(form) {
+      new theme.AjaxProduct(form, '.quick-add-modal__submit');
+      
+      // Close modal on successful add
+      form.addEventListener('ajaxProduct:added', function() {
+        var productId = form.dataset.productId;
+        var modal = document.getElementById('QuickAddModal-' + productId);
+        if (modal) {
+          modal.style.display = 'none';
+          document.body.style.overflow = '';
+          // Reset form
+          form.reset();
+          var quantityInput = form.querySelector('.quantity-selector__input');
+          if (quantityInput) quantityInput.value = 1;
+        }
+      });
+      
+      // Quantity selector buttons
+      var decreaseBtn = form.querySelector('.quantity-selector__button--minus');
+      var increaseBtn = form.querySelector('.quantity-selector__button--plus');
+      var quantityInput = form.querySelector('.quantity-selector__input');
+      
+      if (decreaseBtn && quantityInput) {
+        decreaseBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          var currentValue = parseInt(quantityInput.value) || 1;
+          if (currentValue > 1) {
+            quantityInput.value = currentValue - 1;
+          }
+        });
+      }
+      
+      if (increaseBtn && quantityInput) {
+        increaseBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          var currentValue = parseInt(quantityInput.value) || 1;
+          quantityInput.value = currentValue + 1;
+        });
+      }
+    });
+
+    // Close modal buttons
+    document.querySelectorAll('.js-modal-close-quick-add').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var modalId = btn.dataset.modalId;
+        var modal = document.getElementById('QuickAddModal-' + modalId);
+        if (modal) {
+          modal.style.display = 'none';
+          document.body.style.overflow = '';
+        }
+      });
+    });
+
+    // Close modal when clicking outside
+    document.querySelectorAll('.quick-add-modal').forEach(function(modal) {
+      modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+          modal.style.display = 'none';
+          document.body.style.overflow = '';
+        }
+      });
+    });
+
+    // Close modal with Escape key
+    document.addEventListener('keyup', function(e) {
+      if (e.key === 'Escape' || e.keyCode === 27) {
+        var openModal = document.querySelector('.quick-add-modal[style*="display: block"]');
+        if (openModal) {
+          openModal.style.display = 'none';
+          document.body.style.overflow = '';
+        }
       }
     });
 

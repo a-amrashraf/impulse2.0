@@ -1,0 +1,275 @@
+{% comment %}
+  Quick Add Variant Selection Modal
+  Shows variant options and quantity selector when adding product to cart from grid
+{% endcomment %}
+
+<div id="QuickAddModal-{{ product.id }}" class="modal modal--square quick-add-modal" data-product-id="{{ product.id }}" style="display: none;">
+  <div class="modal__inner">
+    <div class="modal__centered">
+      <div class="modal__centered-content">
+        <div class="quick-add-modal__content">
+          <h3 class="quick-add-modal__title">{{ product.title }}</h3>
+          
+          <form method="post" action="{{ routes.cart_add_url }}" class="quick-add-modal__form" data-product-id="{{ product.id }}">
+            
+            {%- unless product.has_only_default_variant -%}
+              <div class="quick-add-modal__variants">
+                <label for="QuickAddVariant-{{ product.id }}" class="quick-add-modal__label">
+                  {%- if product.options.size == 1 -%}
+                    {{ product.options.first }}
+                  {%- else -%}
+                    {{ 'products.product.variant' | t }}
+                  {%- endif -%}
+                </label>
+                <select 
+                  id="QuickAddVariant-{{ product.id }}" 
+                  name="id" 
+                  class="quick-add-modal__select"
+                  required>
+                  {%- for variant in product.variants -%}
+                    <option 
+                      value="{{ variant.id }}"
+                      {% unless variant.available %}disabled{% endunless %}
+                      {% if variant.id == product.selected_or_first_available_variant.id %}selected{% endif %}>
+                      {{ variant.title }}
+                      {%- unless variant.available %} - {{ 'products.product.sold_out' | t }}{% endunless %}
+                      {%- if variant.available and variant.price != product.price %} - {{ variant.price | money }}{% endif -%}
+                    </option>
+                  {%- endfor -%}
+                </select>
+              </div>
+            {%- else -%}
+              <input type="hidden" name="id" value="{{ product.selected_or_first_available_variant.id }}">
+            {%- endunless -%}
+            
+            <div class="quick-add-modal__quantity">
+              <label for="QuickAddQuantity-{{ product.id }}" class="quick-add-modal__label">
+                {{ 'products.product.quantity' | t }}
+              </label>
+              <div class="quantity-selector">
+                <button type="button" class="quantity-selector__button quantity-selector__button--minus" data-action="decrease" aria-label="{{ 'products.product.decrease_quantity' | t }}">
+                  <svg aria-hidden="true" focusable="false" role="presentation" class="icon icon-minus" viewBox="0 0 20 20">
+                    <path fill="#444" d="M17.543 11.029H2.1A1.032 1.032 0 0 1 1.071 10c0-.566.463-1.029 1.029-1.029h15.443c.566 0 1.029.463 1.029 1.029 0 .566-.463 1.029-1.029 1.029z"/>
+                  </svg>
+                </button>
+                <input 
+                  type="number" 
+                  id="QuickAddQuantity-{{ product.id }}" 
+                  name="quantity" 
+                  value="1" 
+                  min="1" 
+                  class="quantity-selector__input"
+                  aria-label="{{ 'products.product.quantity' | t }}">
+                <button type="button" class="quantity-selector__button quantity-selector__button--plus" data-action="increase" aria-label="{{ 'products.product.increase_quantity' | t }}">
+                  <svg aria-hidden="true" focusable="false" role="presentation" class="icon icon-plus" viewBox="0 0 20 20">
+                    <path fill="#444" d="M17.409 8.929h-6.695V2.258c0-.566-.506-1.029-1.071-1.029s-1.071.463-1.071 1.029v6.671H1.967C1.401 8.929.938 9.435.938 10s.463 1.071 1.029 1.071h6.605V17.7c0 .566.506 1.029 1.071 1.029s1.071-.463 1.071-1.029v-6.629h6.695c.566 0 1.029-.506 1.029-1.071s-.463-1.071-1.029-1.071z"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <button type="submit" class="quick-add-modal__submit btn btn--full">
+              <span class="btn__text">{{ 'products.product.add_to_cart' | t }}</span>
+            </button>
+            
+            <div class="quick-add-modal__errors"></div>
+          </form>
+        </div>
+      </div>
+
+      <button type="button" class="modal__close js-modal-close-quick-add text-link" data-modal-id="{{ product.id }}">
+        <svg aria-hidden="true" focusable="false" role="presentation" class="icon icon-close" viewBox="0 0 64 64">
+          <path d="m19 17.61 27.12 27.13m0-27.12L19 44.74"/>
+        </svg>
+        <span class="icon__fallback-text">{{ 'general.accessibility.close_modal' | t }}</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<style>
+  .quick-add-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .quick-add-modal__content {
+    background: var(--colorBody, #fff);
+    padding: 40px;
+    border-radius: 8px;
+    max-width: 500px;
+    width: 90%;
+    margin: 0 auto;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    position: relative;
+  }
+
+  .quick-add-modal__title {
+    font-family: var(--typeHeaderPrimary), var(--typeHeaderFallback);
+    font-size: 24px;
+    margin: 0 0 24px 0;
+    font-weight: var(--typeHeaderWeight, 600);
+    line-height: 1.3;
+    padding-right: 30px;
+  }
+
+  .quick-add-modal__form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .quick-add-modal__label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 10px;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--colorTextBody, #000);
+  }
+
+  .quick-add-modal__select {
+    width: 100%;
+    padding: 14px 16px;
+    border: 1px solid var(--colorBorder, #e5e5e5);
+    border-radius: 4px;
+    font-size: 15px;
+    font-family: var(--typeBasePrimary), var(--typeBaseFallback);
+    background: var(--colorBody, #fff);
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+
+  .quick-add-modal__select:hover {
+    border-color: var(--colorBtnPrimary, #000);
+  }
+
+  .quick-add-modal__select:focus {
+    outline: none;
+    border-color: var(--colorBtnPrimary, #000);
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
+  }
+
+  .quantity-selector {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: fit-content;
+  }
+
+  .quantity-selector__button {
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--colorBorder, #e5e5e5);
+    background: var(--colorBody, #fff);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.2s;
+  }
+
+  .quantity-selector__button:hover {
+    border-color: var(--colorBtnPrimary, #000);
+    background: var(--colorBodyDim, #f5f5f5);
+  }
+
+  .quantity-selector__button:active {
+    transform: scale(0.95);
+  }
+
+  .quantity-selector__button svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .quantity-selector__input {
+    width: 70px;
+    height: 40px;
+    text-align: center;
+    border: 1px solid var(--colorBorder, #e5e5e5);
+    border-radius: 4px;
+    font-size: 16px;
+    font-family: var(--typeBasePrimary), var(--typeBaseFallback);
+    font-weight: 600;
+  }
+
+  .quantity-selector__input:focus {
+    outline: none;
+    border-color: var(--colorBtnPrimary, #000);
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
+  }
+
+  .quick-add-modal__submit {
+    margin-top: 10px;
+    padding: 16px 24px;
+    font-size: 15px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .quick-add-modal__errors {
+    color: #d00;
+    font-size: 14px;
+    text-align: center;
+    padding: 10px;
+    background: rgba(255, 0, 0, 0.1);
+    border-radius: 4px;
+  }
+
+  .modal__close {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    z-index: 1;
+  }
+
+  .modal__close svg {
+    width: 20px;
+    height: 20px;
+    stroke: currentColor;
+    stroke-width: 2;
+    fill: none;
+  }
+
+  .modal__close:hover {
+    opacity: 0.7;
+  }
+
+  @media screen and (max-width: 768px) {
+    .quick-add-modal__content {
+      padding: 30px 20px;
+      max-width: calc(100% - 40px);
+    }
+
+    .quick-add-modal__title {
+      font-size: 20px;
+      margin-bottom: 20px;
+    }
+
+    .quantity-selector {
+      width: 100%;
+      justify-content: space-between;
+    }
+
+    .quantity-selector__input {
+      flex: 1;
+      max-width: 100px;
+    }
+  }
+</style>
