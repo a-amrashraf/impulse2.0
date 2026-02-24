@@ -5,6 +5,10 @@
   http://archetypethemes.co
 */
 
+/* FORCE POPPINS ON ALL ELEMENTS */
+* { font-family: 'Poppins', sans-serif !important; }
+html, body, h1, h2, h3, h4, h5, h6, p, span, div, a, button, input, select, textarea, label, li, ul, ol, header, main, section, footer, nav, .site-nav__link, .mobile-nav__link, .drawer, .drawer__inner { font-family: 'Poppins', sans-serif !important; }
+
 @media only screen and (min-width:769px){
   :root{
     --grid-gutter:22px;
