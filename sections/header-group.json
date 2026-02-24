@@ -95,8 +95,6 @@
         ".drawer__title {font-size: 25px;}",
         "@media only screen and (max-width: 768px) {.site-header {padding: 0 !important; border-bottom: 1.5px solid #ffffff; }}",
         "@media only screen and (min-width: 768px) {.site-header {padding: 0 !important; border-bottom: 1.5px solid #ffffff; }}",
-        ".megamenu .site-nav__dropdown-link[href*=\"wallet\"] {font-family: var(--typeBasePrimary), var(--typeBaseFallback) !important; font-size: calc(var(--typeBaseSize) - 1px) !important; font-weight: var(--typeBaseWeight) !important; letter-spacing: var(--typeBaseSpacing) !important; line-height: 1.5 !important; text-transform: none !important;}",
-        ".mobile-nav__sublist .mobile-nav__link[href*=\"wallet\"] {font-family: inherit !important; font-size: inherit !important; font-weight: 600 !important; letter-spacing: inherit !important; text-transform: inherit !important;}",
         ".drawer__title {font-size: 12px;}"
       ],
       "settings": {
