@@ -12,8 +12,8 @@
   <div class="cart-gift-wrapping" data-wrapping-container id="gift-wrapping-container-{{ 'now' | date: '%s' }}">
     <style>
       .cart-gift-wrapping {
-        margin: 10px 0;
-        padding: 10px;
+        margin: 8px 0;
+        padding: 8px;
         border: 1px solid var(--colorBorder);
         border-radius: 4px;
         background: var(--colorBody);
@@ -21,8 +21,8 @@
       
       .wrapping-header {
         font-weight: 500;
-        margin-bottom: 10px;
-        font-size: 13px;
+        margin-bottom: 8px;
+        font-size: 12px;
         color: {{ settings.cart_wrapping_text_color | default: '#000000' }};
         {% if settings.cart_wrapping_font == 'header' %}
           font-family: var(--typeHeaderPrimary), var(--typeHeaderFallback);
@@ -36,9 +36,9 @@
       .wrapping-item {
         display: flex;
         align-items: flex-start;
-        gap: 8px;
-        padding: 8px;
-        margin-bottom: 8px;
+        gap: 6px;
+        padding: 6px;
+        margin-bottom: 6px;
         border-radius: 4px;
         border: 1px solid var(--colorBorder);
         background-color: #fafafa;
@@ -49,8 +49,8 @@
       }
       
       .wrapping-checkbox {
-        width: 16px;
-        height: 16px;
+        width: 14px;
+        height: 14px;
         margin-top: 2px;
         cursor: pointer;
         flex-shrink: 0;
@@ -62,11 +62,11 @@
       
       .wrapping-item-label {
         cursor: pointer;
-        font-size: {{ settings.cart_wrapping_font_size | default: 12 }}px;
+        font-size: {{ settings.cart_wrapping_font_size | default: 11 }}px;
         color: {{ settings.cart_wrapping_text_color | default: '#000000' }};
         font-weight: 500;
         display: block;
-        margin-bottom: 4px;
+        margin-bottom: 3px;
         {% if settings.cart_wrapping_font == 'header' %}
           font-family: var(--typeHeaderPrimary), var(--typeHeaderFallback);
         {% elsif settings.cart_wrapping_font == 'poppins' %}
@@ -77,13 +77,13 @@
       }
       
       .wrapping-item-title {
-        font-size: 11px;
+        font-size: 10px;
         color: #666;
       }
       
       .wrapping-item-image {
-        width: 40px;
-        height: 40px;
+        width: 35px;
+        height: 35px;
         object-fit: cover;
         border-radius: 3px;
         border: 1px solid var(--colorBorder);
@@ -95,7 +95,7 @@
         justify-content: space-between;
         cursor: pointer;
         user-select: none;
-        padding: 8px 0;
+        padding: 6px 0;
       }
       
       .wrapping-header:hover {
@@ -106,14 +106,14 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        width: 20px;
-        height: 20px;
+        width: 18px;
+        height: 18px;
         background-color: transparent;
         border: 1px solid var(--colorBorder);
         border-radius: 3px;
         cursor: pointer;
         padding: 0;
-        font-size: 16px;
+        font-size: 14px;
         line-height: 1;
         transition: transform 0.2s ease, background-color 0.2s ease;
       }
@@ -177,12 +177,12 @@
             </div>
           </div>
           {% if item.image %}
-            <img src="{{ item.image | img_url: '40x40' }}" alt="{{ item.title }}" class="wrapping-item-image">
+            <img src="{{ item.image | img_url: '35x35' }}" alt="{{ item.title }}" class="wrapping-item-image">
           {% endif %}
         </div>
       {% endfor %}
     {% else %}
-      <p style="color: #666; font-size: 11px;">No items to wrap</p>
+      <p style="color: #666; font-size: 10px;">No items to wrap</p>
     {% endif %}
     </div>
   </div>
