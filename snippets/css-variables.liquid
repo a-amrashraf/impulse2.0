@@ -1,13 +1,13 @@
 {%- style -%}
     :root {
-    --typeHeaderPrimary: 'Poppins';
+    --typeHeaderPrimary: Poppins;
     --typeHeaderFallback: sans-serif;
     --typeHeaderSize: {{ settings.type_header_base_size | default: '32' | append: 'px' }};
     --typeHeaderWeight: {{ settings.type_header_font_family.weight }};
     --typeHeaderLineHeight: {{ settings.type_header_line_height | default: 1.4 }};
     --typeHeaderSpacing: {{ settings.type_header_spacing | default: '25' | divided_by: 1000.00 | append: 'em' }};
 
-    --typeBasePrimary: 'Poppins';
+    --typeBasePrimary: Poppins;
     --typeBaseFallback: sans-serif;
     --typeBaseSize: {{ settings.type_base_size | default: 16 | append: 'px' }};
     --typeBaseWeight: {{ settings.type_base_font_family.weight }};
