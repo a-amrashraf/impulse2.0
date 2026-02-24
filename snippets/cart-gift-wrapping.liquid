@@ -12,8 +12,8 @@
   <div class="cart-gift-wrapping" data-wrapping-container id="gift-wrapping-container-{{ 'now' | date: '%s' }}">
     <style>
       .cart-gift-wrapping {
-        margin: 15px 0;
-        padding: 15px;
+        margin: 10px 0;
+        padding: 10px;
         border: 1px solid var(--colorBorder);
         border-radius: 4px;
         background: var(--colorBody);
@@ -36,9 +36,9 @@
       .wrapping-item {
         display: flex;
         align-items: flex-start;
-        gap: 12px;
-        padding: 12px;
-        margin-bottom: 12px;
+        gap: 8px;
+        padding: 8px;
+        margin-bottom: 8px;
         border-radius: 4px;
         border: 1px solid var(--colorBorder);
         background-color: #fafafa;
@@ -49,8 +49,8 @@
       }
       
       .wrapping-checkbox {
-        width: 18px;
-        height: 18px;
+        width: 16px;
+        height: 16px;
         margin-top: 2px;
         cursor: pointer;
         flex-shrink: 0;
@@ -62,7 +62,7 @@
       
       .wrapping-item-label {
         cursor: pointer;
-        font-size: {{ settings.cart_wrapping_font_size | default: 14 }}px;
+        font-size: {{ settings.cart_wrapping_font_size | default: 12 }}px;
         color: {{ settings.cart_wrapping_text_color | default: '#000000' }};
         font-weight: 500;
         display: block;
@@ -77,13 +77,13 @@
       }
       
       .wrapping-item-title {
-        font-size: 13px;
+        font-size: 11px;
         color: #666;
       }
       
       .wrapping-item-image {
-        width: 50px;
-        height: 50px;
+        width: 40px;
+        height: 40px;
         object-fit: cover;
         border-radius: 3px;
         border: 1px solid var(--colorBorder);
@@ -177,12 +177,12 @@
             </div>
           </div>
           {% if item.image %}
-            <img src="{{ item.image | img_url: '50x50' }}" alt="{{ item.title }}" class="wrapping-item-image">
+            <img src="{{ item.image | img_url: '40x40' }}" alt="{{ item.title }}" class="wrapping-item-image">
           {% endif %}
         </div>
       {% endfor %}
     {% else %}
-      <p style="color: #666; font-size: 13px;">No items to wrap</p>
+      <p style="color: #666; font-size: 11px;">No items to wrap</p>
     {% endif %}
     </div>
   </div>
