@@ -64,7 +64,7 @@
     "cart_additional_buttons": true,
     "cart_notes_enable": false,
     "cart_notes_hint_text": "you can ask for a special packaging for your purchased items for a small extra fee",
-    "cart_wrapping_enable": true,
+    "cart_wrapping_enable": false,
     "cart_wrapping_product_handle": "special-wrapping",
     "cart_wrapping_text": "Add special wrapping to your products",
     "cart_wrapping_font": "base",
