@@ -89,7 +89,7 @@
         "logo"
       ],
       "custom_css": [
-         "* {font-family: Poppins, sans-serif !important;}",
+         "* {font-family: 'Poppins', sans-serif !important;}",
          ".mobile-nav__item:after {border-bottom: 0px solid;}",
          ".collapsible-trigger {border: 0px;}",
          "ul.mobile-nav a[href*=\"on-sale\"] {color: red !important;}",
