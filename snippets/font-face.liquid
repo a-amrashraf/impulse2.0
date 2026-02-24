@@ -1,3 +1,4 @@
+{%- comment -%}
 {%- assign header_font = settings.type_header_font_family -%}
 {%- assign base_font = settings.type_base_font_family -%}
 {%- assign base_font_bold = base_font | font_modify: 'weight', '600' -%}
@@ -12,3 +13,4 @@
   {{ base_font_italic | font_face: font_display: 'swap' }}
   {{ base_font_bold_italic | font_face: font_display: 'swap' }}
 {%- endstyle -%}
+{%- endcomment -%}
