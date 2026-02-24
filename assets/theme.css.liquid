@@ -7441,6 +7441,11 @@ details[open]>.megamenu .appear-animation{
     width:16px;
   }
 
+.collapsible-trigger__icon .icon-chevron-down{
+    height:16px;
+    width:16px;
+  }
+
 .collapsible-trigger__icon .icon-plus{
     height:18px;
     width:18px;
@@ -7448,7 +7453,8 @@ details[open]>.megamenu .appear-animation{
   }
 
 .collapsible-trigger__icon svg,
-.collapsible-trigger__icon .icon-plus{
+.collapsible-trigger__icon .icon-plus,
+.collapsible-trigger__icon .icon-chevron-down{
   display: block;
   stroke: var(--colorDrawerText);
 }
@@ -7490,6 +7496,12 @@ details[open]>.megamenu .appear-animation{
     width:18px;
     color: var(--colorDrawerText);
   }
+
+.collapsible-trigger__icon--circle svg,
+.collapsible-trigger__icon--circle .icon-plus{
+  display: block;
+  stroke: var(--colorDrawerText);
+}
 
 .collapsible-trigger.is-open .collapsible-trigger__icon>.icon-chevron-down{
   transform:scaleY(-1);
