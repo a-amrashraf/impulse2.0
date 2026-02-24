@@ -7320,11 +7320,26 @@ details[open]>.megamenu .appear-animation{
   width:28px;
 }
 
+#NavDrawer .collapsible-trigger__icon--circle{
+  border:0;
+  border-radius:0;
+  height:20px;
+  text-align:inherit;
+  width:20px;
+}
+
 .collapsible-trigger__icon--circle .icon{
     left:50%;
     position:absolute;
     top:50%;
     transform:translate(-50%, -50%);
+  }
+
+#NavDrawer .collapsible-trigger__icon--circle .icon{
+    left:auto;
+    position:static;
+    top:auto;
+    transform:none;
   }
 
 .collapsible-trigger.is-open .collapsible-trigger__icon>.icon-chevron-down{

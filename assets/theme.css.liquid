@@ -6742,13 +6742,11 @@ details[open]>.site-nav__dropdown{
 
 .mobile-nav__link--top-level{
   font-size:1.4em;
-  font-family: 'Poppins', sans-serif;
-  font-weight:500;
 }
 
 .mobile-nav--heading-style .mobile-nav__link--top-level{
-    font-family: 'Poppins', sans-serif;
-  font-weight:500;
+    font-family:var(--typeHeaderPrimary), var(--typeHeaderFallback);
+    font-weight:var(--typeHeaderWeight);
     letter-spacing:var(--typeHeaderSpacing);
     line-height:var(--typeHeaderLineHeight);
 }
@@ -6762,7 +6760,6 @@ details[open]>.site-nav__dropdown{
   padding:15px var(--drawer-gutter);
   -webkit-text-decoration:none;
   text-decoration:none;
-  font-family: 'Poppins', sans-serif;
 }
 
 .mobile-nav__faux-link:active,.mobile-nav__link:active,.mobile-nav__toggle .faux-button:active,.mobile-nav__toggle button:active{
@@ -6859,9 +6856,8 @@ details[open]>.site-nav__dropdown{
   }
 
 .mobile-nav__sublist .mobile-nav__faux-link,.mobile-nav__sublist .mobile-nav__link{
-  font-weight:350;
+    font-weight:400;
     padding:7.5px 25px 7.5px var(--drawer-gutter);
-  font-size:1.15em;
   }
 
 .mobile-nav__grandchildlist{
@@ -7450,10 +7446,6 @@ details[open]>.megamenu .appear-animation{
     width:16px;
   }
 
-.mobile-nav .collapsible-trigger__icon .icon{
-    transition:all 0.35s ease-in-out;
-  }
-
 .collapsible-trigger__icon .icon-chevron-down{
     height:16px;
     width:16px;
@@ -7494,6 +7486,14 @@ details[open]>.megamenu .appear-animation{
   width:32px;
 }
 
+#NavDrawer .collapsible-trigger__icon--circle{
+  border:0;
+  border-radius:0;
+  height:20px;
+  text-align:inherit;
+  width:20px;
+}
+
 .collapsible-trigger__icon--circle .icon{
     left:50%;
     position:absolute;
@@ -7502,6 +7502,13 @@ details[open]>.megamenu .appear-animation{
     transition:transform 0.25s ease-in-out;
     height:16px;
     width:16px;
+  }
+
+#NavDrawer .collapsible-trigger__icon--circle .icon{
+    left:auto;
+    position:static;
+    top:auto;
+    transform:none;
   }
 
 .collapsible-trigger__icon--circle .icon-plus{
@@ -7534,14 +7541,6 @@ details[open]>.megamenu .appear-animation{
     visibility:visible;
   }
 
-.mobile-nav .collapsible-content{
-  transition:opacity 0.4s cubic-bezier(.25,.46,.45,.94),height 0.4s cubic-bezier(.25,.46,.45,.94);
-}
-
-.mobile-nav .collapsible-content.is-open{
-    transition:opacity 1.15s cubic-bezier(.25,.46,.45,.94),height 0.45s cubic-bezier(.25,.46,.45,.94);
-  }
-
 .collapsible-content--all{
   backface-visibility:hidden;
   height:0;
@@ -7572,18 +7571,10 @@ details[open]>.megamenu .appear-animation{
   transition:transform 0.3s cubic-bezier(.25,.46,.45,.94);
 }
 
-.mobile-nav .collapsible-content__inner{
-  transition:transform 0.4s cubic-bezier(.25,.46,.45,.94);
-}
-
 .is-open .collapsible-content__inner{
     transform:translateY(0);
     transition:transform 0.5s cubic-bezier(.25,.46,.45,.94);
 }
-
-.mobile-nav .is-open .collapsible-content__inner{
-    transition:transform 0.6s cubic-bezier(.25,.46,.45,.94);
-  }
 
 .rte.collapsible-content__inner--faq{
   padding-bottom:30px;

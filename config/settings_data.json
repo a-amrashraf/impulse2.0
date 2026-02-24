@@ -38,7 +38,7 @@
     "type_headers_align_text": true,
     "type_base_font_family": "poppins_n7",
     "type_base_size": 12,
-    "type_navigation_style": "heading",
+    "type_navigation_style": "body",
     "type_navigation_size": 12,
     "type_navigation_capitalize": false,
     "type_product_style": "heading",
