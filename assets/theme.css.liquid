@@ -7445,6 +7445,15 @@ details[open]>.megamenu .appear-animation{
     width:10px;
   }
 
+.collapsible-trigger__icon .icon-plus{
+    height:12px;
+    width:12px;
+  }
+
+.collapsible-trigger.is-open .collapsible-trigger__icon .icon-plus{
+  transform:rotate(45deg);
+}
+
 @media only screen and (min-width:769px){
 
 .collapsible-trigger__icon .icon{
@@ -7477,9 +7486,6 @@ details[open]>.megamenu .appear-animation{
     top:50%;
     transform:translate(-50%, -50%);
     transition:transform 0.3s ease;
-  }
-
-.collapsible-trigger__icon--circle .icon-plus{
     height:14px;
     width:14px;
   }
@@ -7488,8 +7494,7 @@ details[open]>.megamenu .appear-animation{
   transform:scaleY(-1);
 }
 
-.collapsible-trigger.is-open .collapsible-trigger__icon--circle .icon-plus,
-.collapsible-trigger.is-open .collapsible-trigger__icon--circle>.icon-plus{
+.collapsible-trigger.is-open .collapsible-trigger__icon--circle .icon{
   transform:translate(-50%, -50%) rotate(45deg);
 }
 
