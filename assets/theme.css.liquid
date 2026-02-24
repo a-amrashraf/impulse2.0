@@ -6733,7 +6733,7 @@ details[open]>.site-nav__dropdown{
 }
 
 .mobile-nav__link--top-level{
-  font-size:1.6em;
+  font-size:1.55em;
   font-family: 'Poppins', sans-serif;
 }
 
@@ -6817,11 +6817,6 @@ details[open]>.site-nav__dropdown{
 .mobile-nav__toggle{
   flex:0 1 auto;
 }
-
-.mobile-nav__toggle .icon{
-    height:16px;
-    width:16px;
-  }
 
 .mobile-nav__toggle .faux-button,.mobile-nav__toggle button{
     height:60%;
@@ -7449,19 +7444,18 @@ details[open]>.megamenu .appear-animation{
 .collapsible-trigger__icon .icon-plus{
     height:18px;
     width:18px;
+    color: var(--colorDrawerText);
   }
+
+.collapsible-trigger__icon svg,
+.collapsible-trigger__icon .icon-plus{
+  display: block;
+  stroke: var(--colorDrawerText);
+}
 
 .collapsible-trigger.is-open .collapsible-trigger__icon .icon-plus{
   transform:rotate(45deg);
 }
-
-@media only screen and (min-width:769px){
-
-.collapsible-trigger__icon .icon{
-      height:12px;
-      width:12px;
-  }
-    }
 
 .collapsible-trigger--inline{
   padding:11px 0 11px 40px;
@@ -7494,6 +7488,7 @@ details[open]>.megamenu .appear-animation{
 .collapsible-trigger__icon--circle .icon-plus{
     height:18px;
     width:18px;
+    color: var(--colorDrawerText);
   }
 
 .collapsible-trigger.is-open .collapsible-trigger__icon>.icon-chevron-down{
