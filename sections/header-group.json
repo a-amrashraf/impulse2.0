@@ -93,6 +93,7 @@
         ".collapsible-trigger {border: 0px;}",
         "ul.mobile-nav a[href*=\"on-sale\"] {color: red !important;}",
         ".drawer__title {font-size: 25px;}",
+        ".site-nav__link--icon .icon {height: 20px; width: 20px;}",
         "@media only screen and (max-width: 768px) {.site-header {padding: 0 !important; border-bottom: 1.5px solid #ffffff; }}",
         "@media only screen and (min-width: 768px) {.site-header {padding: 0 !important; border-bottom: 1.5px solid #ffffff; }}",
         ".drawer a,.drawer .mobile-nav__item,.drawer .collapsible-trigger {font-weight: bold !important;}",
