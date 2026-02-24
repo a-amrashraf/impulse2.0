@@ -13149,7 +13149,7 @@ label,.h5,
 .full-unstyled-link,
 .text-box p,.menu-list__link-title,.mega-menu__link-title ,a,.button-secondary,.text-box h2,.details__header,.collection-item__title span
 {
-  font-family: 'MakroTrial-Bold' !important;
+/* Removed MakroTrial override */
    font-style: var(--font-heading-style);
  font-weight: var(--font-heading-weight);
   letter-spacing: calc(var(--font-heading-scale) * 0.06rem);

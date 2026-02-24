@@ -237,54 +237,8 @@ theme.recentlyViewed = {
     lockMobileScrolling: function(namespace, element) {
       var el = element ? element : document.documentElement;
       document.documentElement.classList.add('lock-scroll');
-      
-      // Prevent touchmove on the background content
-      el.on('touchmove' + namespace, function(evt) {
-        // Allow scrolling only within drawer scrollable areas
-        var target = evt.target;
-        var drawerScrollable = target.closest('.drawer__scrollable');
-        
-        if (!drawerScrollable) {
-          evt.preventDefault();
-          return false;
-        }
-        
-        // Check if the scrollable area can actually scroll
-        var hasVerticalScroll = drawerScrollable.scrollHeight > drawerScrollable.clientHeight;
-        
-        if (!hasVerticalScroll) {
-          evt.preventDefault();
-          return false;
-        }
-        
-        // Allow scrolling within the drawer but prevent overscroll
-        var scrollTop = drawerScrollable.scrollTop;
-        var scrollHeight = drawerScrollable.scrollHeight;
-        var clientHeight = drawerScrollable.clientHeight;
-        var delta = evt.touches[0].clientY - (evt.touches[0].startY || evt.touches[0].clientY);
-        
-        // Prevent scrolling beyond boundaries
-        if ((scrollTop <= 0 && delta > 0) || (scrollTop + clientHeight >= scrollHeight && delta < 0)) {
-          evt.preventDefault();
-          return false;
-        }
-        
-        // Store the starting position for next event
-        if (!evt.touches[0].startY) {
-          evt.touches[0].startY = evt.touches[0].clientY;
-        }
-        
+      el.on('touchmove' + namespace, function() {
         return true;
-      });
-      
-      // Store initial touch position
-      el.on('touchstart' + namespace, function(evt) {
-        var target = evt.target;
-        var drawerScrollable = target.closest('.drawer__scrollable');
-        
-        if (drawerScrollable && evt.touches[0]) {
-          evt.touches[0].startY = evt.touches[0].clientY;
-        }
       });
     },
   
@@ -292,7 +246,6 @@ theme.recentlyViewed = {
       document.documentElement.classList.remove('lock-scroll');
       var el = element ? element : document.documentElement;
       el.off('touchmove' + namespace);
-      el.off('touchstart' + namespace);
     }
   };
   
@@ -1607,29 +1560,6 @@ theme.recentlyViewed = {
         method: 'GET'
       }).then(response => response.json());
     },
-
-    updateCountBubble: function(count) {
-      var countEls = document.querySelectorAll('.cart-link__bubble-num');
-
-      if (countEls.length) {
-        countEls.forEach(el => {
-          el.innerText = count;
-        });
-      }
-
-      var bubbles = document.querySelectorAll('.cart-link__bubble');
-      if (bubbles.length) {
-        if (count > 0) {
-          bubbles.forEach(b => {
-            b.classList.add('cart-link__bubble--visible');
-          });
-        } else {
-          bubbles.forEach(b => {
-            b.classList.remove('cart-link__bubble--visible');
-          });
-        }
-      }
-    },
   
     getCartProductMarkup: function() {
       var url = ''.concat(theme.routes.cartPage, '?t=').concat(Date.now());
@@ -1762,7 +1692,6 @@ theme.recentlyViewed = {
         document.addEventListener('cart:quantity' + this.namespace, this.quantityChanged.bind(this));
   
         this.form.on('submit' + this.namespace, this.onSubmit.bind(this));
-        this.form.addEventListener('click', this.removeItem.bind(this));
   
         if (this.noteInput) {
           this.noteInput.addEventListener('change', function() {
@@ -1816,35 +1745,6 @@ theme.recentlyViewed = {
           }
         }
       },
-
-      removeItem: function(evt) {
-        var removeBtn = evt.target.closest('.js-qty__remove');
-        if (!removeBtn) {
-          return;
-        }
-
-        evt.preventDefault();
-
-        var actions = removeBtn.closest('.cart__item-actions');
-        var wrapper = actions ? actions.querySelector(selectors.qtySelector) : null;
-        if (!wrapper) {
-          wrapper = removeBtn.closest(selectors.qtySelector);
-        }
-        if (!wrapper) {
-          return;
-        }
-
-        var input = wrapper.querySelector('.js-qty__num');
-        if (!input || !input.dataset.id) {
-          return;
-        }
-
-        input.value = 0;
-
-        document.dispatchEvent(new CustomEvent('cart:quantity' + this.namespace, {
-          detail: [input.dataset.id, 0, wrapper]
-        }));
-      },
   
       /*============================================================================
         Query cart page to get markup
@@ -1855,8 +1755,7 @@ theme.recentlyViewed = {
   
         return {
           items: html.querySelector('.cart__items'),
-          discounts: html.querySelector('.cart__discounts'),
-          giftWrapping: html.querySelector('[data-gift-wrapping-ajax]')
+          discounts: html.querySelector('.cart__discounts')
         }
       },
   
@@ -1885,19 +1784,11 @@ theme.recentlyViewed = {
         // Append item markup
         this.products.innerHTML = '';
         this.products.append(items);
-
-        // Update gift wrapping markup when available (cart drawer)
-        var giftWrappingSlot = this.form.querySelector('[data-gift-wrapping-slot]');
-        if (giftWrappingSlot && markup.giftWrapping) {
-          giftWrappingSlot.innerHTML = markup.giftWrapping.innerHTML;
-        }
   
         // Update subtotal
         this.subtotal.innerHTML = theme.Currency.formatMoney(subtotal, theme.settings.moneyFormat);
   
         this.reInit();
-
-        document.dispatchEvent(new CustomEvent('cart:updated'));
   
         if (window.AOS) { AOS.refreshHard() }
   
@@ -1931,7 +1822,7 @@ theme.recentlyViewed = {
         var qty = evt.detail[1];
         var el = evt.detail[2];
   
-        if (!key || qty === null || qty === undefined) {
+        if (!key || !qty) {
           return;
         }
   
@@ -8454,153 +8345,6 @@ theme.recentlyViewed = {
     if (theme.settings.isCustomerTemplate) {
       theme.customerTemplates();
     }
-
-    // Initialize quick add to cart forms on product grid items
-    document.querySelectorAll('.grid-product__quick-add').forEach(function(form) {
-      var hasOnlyDefault = form.dataset.hasOnlyDefault === 'true';
-      
-      // If product has multiple variants, open modal on click
-      if (!hasOnlyDefault) {
-        var btn = form.querySelector('.grid-product__quick-add-btn');
-        if (btn) {
-          btn.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            var productId = form.dataset.productId;
-            var modal = document.getElementById('QuickAddModal-' + productId);
-            if (modal) {
-              modal.classList.add('is-visible');
-              document.body.style.overflow = 'hidden';
-              // Clear any previous errors
-              var errorDiv = modal.querySelector('.quick-add-modal__errors');
-              if (errorDiv) {
-                errorDiv.textContent = '';
-                errorDiv.style.display = 'none';
-              }
-            }
-          });
-        }
-        
-        // Prevent form clicks from triggering product link
-        form.addEventListener('click', function(e) {
-          e.stopPropagation();
-        });
-      } else {
-        // Product has only one variant, use normal quick add
-        new theme.AjaxProduct(form, '.grid-product__quick-add-btn');
-        
-        // Prevent form and button clicks from triggering product link
-        form.addEventListener('click', function(e) {
-          e.stopPropagation();
-        });
-        var btn = form.querySelector('.grid-product__quick-add-btn');
-        if (btn) {
-          btn.addEventListener('click', function(e) {
-            e.stopPropagation();
-          });
-        }
-      }
-    });
-
-    // Initialize quick add variant modal forms
-    document.querySelectorAll('.quick-add-modal__form').forEach(function(form) {
-      new theme.AjaxProduct(form, '.quick-add-modal__submit');
-      
-      // Close modal on successful add
-      form.addEventListener('ajaxProduct:added', function() {
-        var productId = form.dataset.productId;
-        var modal = document.getElementById('QuickAddModal-' + productId);
-        if (modal) {
-          modal.classList.remove('is-visible');
-          document.body.style.overflow = '';
-          // Reset form
-          form.reset();
-          var quantityInput = form.querySelector('.quantity-selector__input');
-          if (quantityInput) quantityInput.value = 1;
-          // Hide any errors
-          var errorDiv = form.querySelector('.quick-add-modal__errors');
-          if (errorDiv) {
-            errorDiv.textContent = '';
-            errorDiv.style.display = 'none';
-          }
-        }
-      });
-      
-      // Show errors in modal
-      form.addEventListener('ajaxProduct:error', function(e) {
-        var errorDiv = form.querySelector('.quick-add-modal__errors');
-        if (errorDiv && e.detail && e.detail.errorMessage) {
-          errorDiv.textContent = e.detail.errorMessage;
-          errorDiv.style.display = 'block';
-        }
-      });
-      
-      // Quantity selector buttons
-      var decreaseBtn = form.querySelector('.quantity-selector__button--minus');
-      var increaseBtn = form.querySelector('.quantity-selector__button--plus');
-      var quantityInput = form.querySelector('.quantity-selector__input');
-      
-      if (decreaseBtn && quantityInput) {
-        decreaseBtn.addEventListener('click', function(e) {
-          e.preventDefault();
-          var currentValue = parseInt(quantityInput.value) || 1;
-          if (currentValue > 1) {
-            quantityInput.value = currentValue - 1;
-          }
-        });
-      }
-      
-      if (increaseBtn && quantityInput) {
-        increaseBtn.addEventListener('click', function(e) {
-          e.preventDefault();
-          var currentValue = parseInt(quantityInput.value) || 1;
-          quantityInput.value = currentValue + 1;
-        });
-      }
-    });
-
-    // Close modal buttons
-    document.querySelectorAll('.js-modal-close-quick-add').forEach(function(btn) {
-      btn.addEventListener('click', function() {
-        var modalId = btn.dataset.modalId;
-        var modal = document.getElementById('QuickAddModal-' + modalId);
-        if (modal) {
-          modal.classList.remove('is-visible');
-          document.body.style.overflow = '';
-        }
-      });
-    });
-
-    // Close modal when clicking outside
-    document.querySelectorAll('.quick-add-modal').forEach(function(modal) {
-      modal.addEventListener('click', function(e) {
-        if (e.target === modal) {
-          modal.classList.remove('is-visible');
-          document.body.style.overflow = '';
-        }
-      });
-    });
-
-    // Close modal with Escape key
-    document.addEventListener('keyup', function(e) {
-      if (e.key === 'Escape' || e.keyCode === 27) {
-        var openModal = document.querySelector('.quick-add-modal.is-visible');
-        if (openModal) {
-          openModal.classList.remove('is-visible');
-          document.body.style.overflow = '';
-        }
-      }
-    });
-
-    document.addEventListener('ajaxProduct:added', function() {
-      theme.cart.getCart()
-        .then(function(cart) {
-          if (cart && typeof cart.item_count === 'number') {
-            theme.cart.updateCountBubble(cart.item_count);
-          }
-        })
-        .catch(function() {});
-    });
 
     document.dispatchEvent(new CustomEvent('page:loaded'));
   });
