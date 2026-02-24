@@ -39,19 +39,16 @@
   .site-nav__link,
   .site-nav__dropdown-link,
   .mobile-nav__link,
-  .mobile-nav__faux-link,
-  .mobile-nav__toggle .faux-button,
-  .mobile-nav__toggle button,
-  .collapsible-trigger {
-    font-size: {{ settings.type_navigation_size }}px !important;
+  .mobile-nav__faux-link {
+    font-size: {{ settings.type_navigation_size }}px;
     {% if settings.type_navigation_style == 'heading' %}
-      font-family: var(--typeHeaderPrimary), var(--typeHeaderFallback) !important;
-      font-weight: var(--typeHeaderWeight) !important;
+      font-family: var(--typeHeaderPrimary), var(--typeHeaderFallback);
+      font-weight: var(--typeHeaderWeight);
       letter-spacing: var(--typeHeaderSpacing);
       line-height: var(--typeHeaderLineHeight);
     {% else %}
-      font-family: var(--typeBasePrimary), var(--typeBaseFallback) !important;
-      font-weight: var(--typeBaseWeight) !important;
+      font-family: var(--typeBasePrimary), var(--typeBaseFallback);
+      font-weight: var(--typeBaseWeight);
       letter-spacing: var(--typeBaseSpacing);
       line-height: var(--typeBaseLineHeight);
     {% endif %}
