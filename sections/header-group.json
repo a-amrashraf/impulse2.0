@@ -99,7 +99,7 @@
         ".site-header__logo {margin: 0 !important;}",
         "@media only screen and (max-width: 768px) {.site-header {padding: 0 !important; border-bottom: 1.5px solid #ffffff; }}",
         "@media only screen and (min-width: 768px) {.site-header {padding: 0 !important; border-bottom: 1.5px solid #ffffff; }}",
-        ".drawer a,.drawer .mobile-nav__item,.drawer .collapsible-trigger {font-weight: bold !important;}",
+        ".site-nav__link,.site-nav__dropdown-link,.mobile-nav__link,.mobile-nav__faux-link,.mobile-nav__toggle .faux-button,.mobile-nav__toggle button,.collapsible-trigger {font-weight: 800 !important;}",
         ".drawer__title {font-size: 12px;}"
       ],
       "settings": {
