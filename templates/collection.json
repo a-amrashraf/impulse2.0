@@ -98,7 +98,7 @@
       "custom_css": [
         ".product__price--compare {color: black;}",
         ".collection-filter .btn,.collection-filter select {font-size: 12px; height: 28px; font-family: \"Poppins\", sans-serif; padding: 6px 16px; line-height: 1;}",
-        ".collection-content {padding-top: 1px;}",
+        ".collection-content {padding-top: 10px;}",
         ".grid-product__image-mask {margin-bottom: 4px !important;}",
         " /* Remove bottom padding under product card */.grid-product__content,.grid-product__meta {padding-bottom: 4px !important; margin-bottom: 4px !important;}",
         " /* Optional: remove extra space from the whole card */.grid-product {margin-bottom: 4px !important;}"
