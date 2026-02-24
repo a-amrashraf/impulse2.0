@@ -89,7 +89,7 @@
         "logo"
       ],
       "custom_css": [
-        ".mobile-nav__item:after {border-bottom: 0px solid;}",
+        ".mobile-nav__item:after {border-bottom: 0px solid; font-family: \"poppins\"}",
         ".collapsible-trigger {border: 0px;}",
         "ul.mobile-nav a[href*=\"on-sale\"] {color: red !important;}",
         ".drawer__title {font-size: 25px;}",
