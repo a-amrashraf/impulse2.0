@@ -68,11 +68,11 @@
               </div>
             </div>
 
+            <div class="quick-add-modal__errors" style="display: none;"></div>
+            
             <button type="submit" class="quick-add-modal__submit btn btn--full">
               <span class="btn__text">{{ 'products.product.add_to_cart' | t }}</span>
             </button>
-            
-            <div class="quick-add-modal__errors"></div>
           </form>
         </div>
       </div>
@@ -233,6 +233,12 @@
     padding: 10px;
     background: rgba(255, 0, 0, 0.1);
     border-radius: 4px;
+    margin-bottom: 10px;
+    display: none;
+  }
+
+  .quick-add-modal__errors:not(:empty) {
+    display: block;
   }
 
   .modal__close {

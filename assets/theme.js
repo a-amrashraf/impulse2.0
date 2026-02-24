@@ -8471,6 +8471,12 @@ theme.recentlyViewed = {
             if (modal) {
               modal.classList.add('is-visible');
               document.body.style.overflow = 'hidden';
+              // Clear any previous errors
+              var errorDiv = modal.querySelector('.quick-add-modal__errors');
+              if (errorDiv) {
+                errorDiv.textContent = '';
+                errorDiv.style.display = 'none';
+              }
             }
           });
         }
@@ -8511,6 +8517,21 @@ theme.recentlyViewed = {
           form.reset();
           var quantityInput = form.querySelector('.quantity-selector__input');
           if (quantityInput) quantityInput.value = 1;
+          // Hide any errors
+          var errorDiv = form.querySelector('.quick-add-modal__errors');
+          if (errorDiv) {
+            errorDiv.textContent = '';
+            errorDiv.style.display = 'none';
+          }
+        }
+      });
+      
+      // Show errors in modal
+      form.addEventListener('ajaxProduct:error', function(e) {
+        var errorDiv = form.querySelector('.quick-add-modal__errors');
+        if (errorDiv && e.detail && e.detail.errorMessage) {
+          errorDiv.textContent = e.detail.errorMessage;
+          errorDiv.style.display = 'block';
         }
       });
       
