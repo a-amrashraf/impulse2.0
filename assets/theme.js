@@ -2952,11 +2952,17 @@ theme.recentlyViewed = {
         if (errors) {
           errors.remove();
         }
-  
-        if (theme.settings.cartType === 'page') {
+
+        // Check if forceDrawer flag is set
+        // If forceDrawer is true, we skip the page redirect and let the drawer open
+        // The CartDrawer component automatically listens to ajaxProduct:added and opens
+        var shouldRedirect = (!this.args || !this.args.forceDrawer) && theme.settings.cartType === 'page';
+        
+        if (shouldRedirect) {
           window.location = theme.routes.cartPage;
+          return; // Exit early to prevent event dispatching after redirect
         }
-  
+
         this.form.dispatchEvent(new CustomEvent('ajaxProduct:added', {
           detail: {
             product: product,
@@ -6916,11 +6922,7 @@ theme.recentlyViewed = {
         theme.NavDrawer = new theme.Drawers('NavDrawer', 'nav');
         if (theme.settings.cartType === 'drawer') {
           if (!document.body.classList.contains('template-cart')) {
-            new theme.CartDrawer();
-          }
-        }
-  
-        theme.collapsibles.init(document.getElementById('NavDrawer'));
+            theme.CartDrawerInstance = new theme.CartDrawer();
       },
   
       onUnload: function() {
@@ -8455,6 +8457,15 @@ theme.recentlyViewed = {
       theme.customerTemplates();
     }
 
+    // Ensure CartDrawer is available for quick-add functionality
+    // Initialize it if it doesn't exist (e.g., when cartType is 'page')
+    if (document.querySelector('.grid-product__quick-add') && !theme.CartDrawerInstance) {
+      var cartDrawerEl = document.querySelector('#CartDrawer');
+      if (cartDrawerEl && !document.body.classList.contains('template-cart')) {
+        theme.CartDrawerInstance = new theme.CartDrawer();
+      }
+    }
+
     // Initialize quick add to cart forms on product grid items
     document.querySelectorAll('.grid-product__quick-add').forEach(function(form) {
       var hasOnlyDefault = form.dataset.hasOnlyDefault === 'true';
@@ -8487,7 +8498,8 @@ theme.recentlyViewed = {
         });
       } else {
         // Product has only one variant, use normal quick add
-        new theme.AjaxProduct(form, '.grid-product__quick-add-btn');
+        // Pass forceDrawer flag to always open drawer instead of redirecting
+        new theme.AjaxProduct(form, '.grid-product__quick-add-btn', { forceDrawer: true });
         
         // Prevent form and button clicks from triggering product link
         form.addEventListener('click', function(e) {
@@ -8504,7 +8516,8 @@ theme.recentlyViewed = {
 
     // Initialize quick add variant modal forms
     document.querySelectorAll('.quick-add-modal__form').forEach(function(form) {
-      new theme.AjaxProduct(form, '.quick-add-modal__submit');
+      // Pass forceDrawer flag to always open drawer instead of redirecting
+      new theme.AjaxProduct(form, '.quick-add-modal__submit', { forceDrawer: true });
       
       // Close modal on successful add
       form.addEventListener('ajaxProduct:added', function() {
@@ -8524,6 +8537,12 @@ theme.recentlyViewed = {
             errorDiv.style.display = 'none';
           }
         }
+        
+        // Ensure cart drawer opens (CartDrawer listens to ajaxProduct:added already, 
+        // but we trigger cart:open as a backup to guarantee it opens)
+        setTimeout(function() {
+          document.dispatchEvent(new CustomEvent('cart:open'));
+        }, 100);
       });
       
       // Show errors in modal
