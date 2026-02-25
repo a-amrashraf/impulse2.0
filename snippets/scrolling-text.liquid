@@ -7,6 +7,12 @@
     font-size: {{ section.settings.text_size }}px;
   }
 
+  @media only screen and (max-width: 768px) {
+    .scrolling-text--{{ section.id }} span {
+      font-size: calc({{ section.settings.text_size }}px * 0.6);
+    }
+  }
+
   {% if section.settings.color_scheme == 'button' %}
     .scrolling-text--{{ section.id }} {
       background: {{ settings.color_button }};
